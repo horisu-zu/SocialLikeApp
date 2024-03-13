@@ -34,7 +34,8 @@ class ResetPasswordActivity : AppCompatActivity() {
                     }
                 })
             } else {
-                Toast.makeText(applicationContext, "Введіть адресу електронної пошти", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "Введіть адресу електронної пошти",
+                    Toast.LENGTH_SHORT).show()
             }
         }
     }

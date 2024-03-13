@@ -3,6 +3,7 @@ package com.example.loginapp
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
@@ -41,11 +42,18 @@ class MainActivity : AppCompatActivity() {
                 override fun handleResponse(response: BackendlessUser?) {
                     Toast.makeText(applicationContext, "Успішний вхід",
                         Toast.LENGTH_SHORT).show()
+
+                    val intent = Intent(this@MainActivity,
+                        HomeActivity::class.java)
+
+                    startActivity(intent)
                 }
 
                 override fun handleFault(fault: BackendlessFault?) {
                     val errorMessage = fault?.message ?: "Помилка логіну"
                     Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_SHORT).show()
+
+                    Log.e("Error: ", errorMessage)
                 }
             })
         }

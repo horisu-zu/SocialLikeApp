@@ -1,5 +1,6 @@
 package com.example.loginapp
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.EditText
@@ -23,6 +24,7 @@ class RegistrationActivity : AppCompatActivity() {
         val emailEditText: EditText = findViewById(R.id.editTextRegistrationEmail)
         val passwordEditText: EditText = findViewById(R.id.editTextRegistrationPassword)
         val nameEditText: EditText = findViewById(R.id.editTextRegistrationName)
+        val nicknameEditText : EditText = findViewById(R.id.editTextNickname)
         val ageEditText: EditText = findViewById(R.id.editTextRegistrationAge)
         val genderEditText: EditText = findViewById(R.id.editTextRegistrationGender)
         val countryEditText: EditText = findViewById(R.id.editTextRegistrationCountry)
@@ -31,19 +33,31 @@ class RegistrationActivity : AppCompatActivity() {
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
             val age = ageEditText.text.toString()
+            val subscribersCount = 0
+            val subscriptionsCount = 0
+            val avatarPath = ""
 
             user.email = email
             user.password = password
             user.setProperty("name", nameEditText.text.toString())
+            user.setProperty("nickname", nicknameEditText.text.toString())
             user.setProperty("age", age)
             user.setProperty("gender", genderEditText.text.toString())
             user.setProperty("country", countryEditText.text.toString())
+            user.setProperty("subscribersCount", subscribersCount)
+            user.setProperty("subscriptionsCount", subscriptionsCount)
+            user.setProperty("avatarPath", avatarPath)
 
             if(isValidEmail(email) && isValidPassword(password) && isValidAge(age)) {
                 Backendless.UserService.register(user, object : AsyncCallback<BackendlessUser> {
                     override fun handleResponse(response: BackendlessUser?) {
                         Toast.makeText(this@RegistrationActivity,
                             "Реєстрація проведена успішно", Toast.LENGTH_SHORT).show()
+
+                        val intent = Intent(this@RegistrationActivity,
+                            HomeActivity::class.java)
+
+                        startActivity(intent)
                     }
 
                     override fun handleFault(fault: BackendlessFault?) {
@@ -55,7 +69,7 @@ class RegistrationActivity : AppCompatActivity() {
                     }
                 })
             } else {
-               Toast.makeText(this, "Невірний формат електронної пошти",
+               Toast.makeText(this, "Невірний формат",
                    Toast.LENGTH_SHORT).show()
             }
         }
