@@ -5,8 +5,8 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:openDrawer="start"
     android:fitsSystemWindows="true"
+    tools:openDrawer="start"
     android:background="@color/black">
     
     <LinearLayout
@@ -20,7 +20,8 @@
             app:statusBarForeground="@color/black"
             android:background="@color/black"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp">
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:layout_width="match_parent"
@@ -41,10 +42,10 @@
                         android:gravity="center">
 
                         <androidx.cardview.widget.CardView
-                            app:cardCornerRadius="5dp"
+                            app:cardCornerRadius="20dp"
                             android:layout_marginStart="15dp"
                             android:layout_width="40dp"
-                            android:layout_height="40dp" >
+                            android:layout_height="40dp">
 
                             <ImageView
                                 android:id="@+id/avatarIcon"
@@ -55,7 +56,7 @@
                         </androidx.cardview.widget.CardView>
 
                         <com.google.android.material.card.MaterialCardView
-                            app:cardCornerRadius="5dp"
+                            app:cardCornerRadius="20dp"
                             android:layout_centerHorizontal="true"
                             android:layout_marginStart="15dp"
                             android:layout_width="40dp"
@@ -70,7 +71,7 @@
                         </com.google.android.material.card.MaterialCardView>
 
                         <com.google.android.material.card.MaterialCardView
-                            app:cardCornerRadius="5dp"
+                            app:cardCornerRadius="20dp"
                             android:layout_alignParentEnd="true"
                             android:layout_marginEnd="15dp"
                             android:layout_width="40dp"
@@ -79,6 +80,7 @@
                             <ImageView
                                 android:id="@+id/settingIcon"
                                 android:src="@drawable/ic_settings"
+                                android:padding="5dp"
                                 android:layout_alignParentEnd="true"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"/>
@@ -104,13 +106,14 @@
     </LinearLayout>
 
     <com.google.android.material.navigation.NavigationView
+        android:id="@+id/profile_nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="@color/black"
         app:itemTextColor="@color/white"
         app:itemIconTint="@color/white"
         app:itemIconPadding="20dp"
-        android:id="@+id/nav_view"
+        android:layout_marginTop="20dp"
         android:layout_gravity="start"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/nav_menu" />

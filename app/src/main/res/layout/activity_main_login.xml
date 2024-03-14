@@ -98,7 +98,8 @@
                 android:layout_height="wrap_content"
                 android:text="Логін"
                 android:alpha="0.7"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="3dp"/>
 
             <EditText
                 android:id="@+id/loginEdit"
@@ -113,7 +114,8 @@
                 android:layout_marginTop="20dp"
                 android:text="Пароль"
                 android:alpha="0.7"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="3dp"/>
 
             <EditText
                 android:id="@+id/passwordEdit"

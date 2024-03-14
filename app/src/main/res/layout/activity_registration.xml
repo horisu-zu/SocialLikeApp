@@ -68,7 +68,8 @@
                 android:layout_height="wrap_content"
                 android:text="Електронна пошта"
                 android:alpha="0.7"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="3dp"/>
 
             <EditText
                 android:id="@+id/editTextRegistrationEmail"
@@ -82,7 +83,8 @@
                 android:layout_height="wrap_content"
                 android:text="Пароль"
                 android:alpha="0.7"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="3dp"/>
 
             <EditText
                 android:id="@+id/editTextRegistrationPassword"
@@ -94,9 +96,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ім'я (логін)"
+                android:text="Ім'я"
                 android:alpha="0.7"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="3dp"/>
 
             <EditText
                 android:id="@+id/editTextRegistrationName"
@@ -109,7 +112,8 @@
                 android:layout_height="wrap_content"
                 android:text="Нікнейм"
                 android:alpha="0.7"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="3dp"/>
 
             <EditText
                 android:id="@+id/editTextNickname"
@@ -123,7 +127,8 @@
                 android:text="Вік"
                 android:alpha="0.7"
                 android:inputType="number"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="3dp"/>
 
             <EditText
                 android:id="@+id/editTextRegistrationAge"
@@ -136,7 +141,8 @@
                 android:layout_height="wrap_content"
                 android:text="Стать"
                 android:alpha="0.7"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="3dp"/>
 
             <EditText
                 android:id="@+id/editTextRegistrationGender"
@@ -149,7 +155,8 @@
                 android:layout_height="wrap_content"
                 android:text="Країна"
                 android:alpha="0.7"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="3dp"/>
 
             <EditText
                 android:id="@+id/editTextRegistrationCountry"

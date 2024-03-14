@@ -37,6 +37,7 @@ android {
 
 dependencies {
 
+    implementation ("com.squareup.picasso:picasso:2.8")
     implementation("com.backendless:backendless:5.7.0")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")

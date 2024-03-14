@@ -1,5 +1,6 @@
 package com.example.loginapp
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -25,6 +26,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_login)
 
+        val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+
+        if (Backendless.UserService.CurrentUser() != null) {
+            val intent = Intent(this@MainActivity, HomeActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
+
         Backendless.initApp(this, applicationId, apiKey)
 
         val loginEditText: EditText = findViewById(R.id.loginEdit)
@@ -40,19 +51,20 @@ class MainActivity : AppCompatActivity() {
 
             Backendless.UserService.login(login, password, object : AsyncCallback<BackendlessUser> {
                 override fun handleResponse(response: BackendlessUser?) {
-                    Toast.makeText(applicationContext, "Успішний вхід",
-                        Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "Успішний вхід", Toast.LENGTH_SHORT).show()
 
-                    val intent = Intent(this@MainActivity,
-                        HomeActivity::class.java)
+                    sharedPreferences.edit().putBoolean("isLoggedIn", true).apply()
 
+                    sharedPreferences.edit().putString("userObjectId", response?.objectId).apply()
+
+                    val intent = Intent(this@MainActivity, HomeActivity::class.java)
                     startActivity(intent)
+                    finish()
                 }
 
                 override fun handleFault(fault: BackendlessFault?) {
                     val errorMessage = fault?.message ?: "Помилка логіну"
                     Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_SHORT).show()
-
                     Log.e("Error: ", errorMessage)
                 }
             })
@@ -60,18 +72,18 @@ class MainActivity : AppCompatActivity() {
 
         registrationButton.setOnClickListener {
             val intent = Intent(this, RegistrationActivity::class.java)
-
             startActivity(intent)
         }
 
         forgotPasswordView.setOnClickListener {
             val intent = Intent(this, ResetPasswordActivity::class.java)
-
             startActivity(intent)
         }
 
-        checkBox.setOnClickListener {
-            isCheckBoxSelected = !isCheckBoxSelected
+        checkBox.setOnCheckedChangeListener { _, isChecked ->
+            isCheckBoxSelected = isChecked
+            Log.d("MainActivity", "IsLoggedIn: $isChecked")
         }
     }
+
 }
