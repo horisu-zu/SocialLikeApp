@@ -2,19 +2,21 @@ package com.example.loginapp
 
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.backendless.Backendless
 import com.backendless.BackendlessUser
 import com.backendless.async.callback.AsyncCallback
+import com.backendless.exceptions.BackendlessException
 import com.backendless.exceptions.BackendlessFault
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,15 +28,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_login)
 
-        val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
-
         if (Backendless.UserService.CurrentUser() != null) {
             val intent = Intent(this@MainActivity, HomeActivity::class.java)
+            intent.putExtra("user", Backendless.UserService.CurrentUser())
+
             startActivity(intent)
             finish()
-            return
-        }
+        } else {}
 
         Backendless.initApp(this, applicationId, apiKey)
 
@@ -51,11 +51,8 @@ class MainActivity : AppCompatActivity() {
 
             Backendless.UserService.login(login, password, object : AsyncCallback<BackendlessUser> {
                 override fun handleResponse(response: BackendlessUser?) {
-                    Toast.makeText(applicationContext, "Успішний вхід", Toast.LENGTH_SHORT).show()
-
-                    sharedPreferences.edit().putBoolean("isLoggedIn", true).apply()
-
-                    sharedPreferences.edit().putString("userObjectId", response?.objectId).apply()
+                    Toast.makeText(applicationContext, "Успішний вхід",
+                        Toast.LENGTH_SHORT).show()
 
                     val intent = Intent(this@MainActivity, HomeActivity::class.java)
                     startActivity(intent)
@@ -67,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_SHORT).show()
                     Log.e("Error: ", errorMessage)
                 }
-            })
+            }, isCheckBoxSelected)
         }
 
         registrationButton.setOnClickListener {
@@ -80,10 +77,9 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        checkBox.setOnCheckedChangeListener { _, isChecked ->
-            isCheckBoxSelected = isChecked
-            Log.d("MainActivity", "IsLoggedIn: $isChecked")
+        checkBox.setOnClickListener {
+            isCheckBoxSelected = !isCheckBoxSelected
+            Log.e("CheckBox: ", isCheckBoxSelected.toString())
         }
     }
-
 }

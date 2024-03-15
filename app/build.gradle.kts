@@ -36,7 +36,7 @@ android {
 }
 
 dependencies {
-
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
     implementation ("com.squareup.picasso:picasso:2.8")
     implementation("com.backendless:backendless:5.7.0")
     implementation("androidx.core:core-ktx:1.12.0")

@@ -3,12 +3,17 @@ package com.example.loginapp
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.backendless.Backendless
+import com.backendless.BackendlessUser
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.navigation.NavigationView
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
 class HomeActivity : AppCompatActivity() {
@@ -22,15 +27,25 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+
+        //val intent : Intent
+
         val user = Backendless.UserService.CurrentUser()
+
+        /*if(intent != null) {
+            user = intent.getSerializableExtra("user") as BackendlessUser?
+        }*/
 
         drawerLayout = findViewById(R.id.drawer_layout)
         profileNavigationView = findViewById(R.id.profile_nav_view)
         avatarIcon = findViewById(R.id.avatarIcon)
         settingsIcon = findViewById(R.id.settingIcon)
 
-        /*val userAvatarPath = user.getProperty("avatarPath").toString()
-        Picasso.get().load(userAvatarPath).into(avatarIcon)*/
+        val userAvatarPath = user.getProperty("avatarPath").toString()
+        Glide.with(this)
+            .load(userAvatarPath)
+            .apply(RequestOptions().circleCrop())
+            .into(avatarIcon)
 
         avatarIcon.setOnClickListener {
             drawerLayout.openDrawer(profileNavigationView)
@@ -69,8 +84,10 @@ class HomeActivity : AppCompatActivity() {
             userNameTextView.text = user.getProperty("name").toString()
             userNicknameTextView.text = "@" + user.getProperty("nickname").toString()
 
-            val userAvatarPath = user.getProperty("avatarPath").toString()
-            Picasso.get().load(userAvatarPath).into(userAvatarImageView)
+            Glide.with(this)
+                .load(userAvatarPath)
+                .apply(RequestOptions().circleCrop())
+                .into(userAvatarImageView)
 
             userSubscribersCount.text = "Кількість підписників: " +
                     user.getProperty("subscribersCount").toString()
