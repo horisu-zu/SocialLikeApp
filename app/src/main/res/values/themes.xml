@@ -1,6 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Base.Theme.LoginApp" parent="Theme.Material3.Light.NoActionBar">
-        <item name="colorPrimary">@color/black</item>
     </style>
 
     <style name="Theme.LoginApp" parent="Base.Theme.LoginApp" />

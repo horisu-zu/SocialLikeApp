@@ -3,18 +3,15 @@ package com.example.loginapp
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.backendless.Backendless
-import com.backendless.BackendlessUser
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.example.loginapp.Fragments.HomeFragment
 import com.google.android.material.navigation.NavigationView
-import com.squareup.picasso.Callback
-import com.squareup.picasso.Picasso
 
 class HomeActivity : AppCompatActivity() {
 
@@ -28,18 +25,19 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
-        //val intent : Intent
-
         val user = Backendless.UserService.CurrentUser()
-
-        /*if(intent != null) {
-            user = intent.getSerializableExtra("user") as BackendlessUser?
-        }*/
 
         drawerLayout = findViewById(R.id.drawer_layout)
         profileNavigationView = findViewById(R.id.profile_nav_view)
         avatarIcon = findViewById(R.id.avatarIcon)
         settingsIcon = findViewById(R.id.settingIcon)
+
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction().replace(
+                R.id.fragment_container,
+                HomeFragment()
+            ).commit()
+        }
 
         val userAvatarPath = user.getProperty("avatarPath").toString()
         Glide.with(this)
@@ -54,6 +52,10 @@ class HomeActivity : AppCompatActivity() {
         profileNavigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_home -> {
+                    supportFragmentManager.beginTransaction().replace(
+                        R.id.fragment_container,
+                        HomeFragment()
+                    ).commit()
                     true
                 }
                 R.id.nav_settings -> {
