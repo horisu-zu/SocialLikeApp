@@ -1,5 +1,6 @@
     package com.example.loginapp
 
+    import android.content.ContentResolver
     import android.content.Context
     import android.content.Intent
     import android.graphics.Bitmap
@@ -69,7 +70,8 @@
                             val sharedWithMePath : String = "users/${user.getProperty("nickname")}"+
                                     "/shared_with_me"
 
-                            uploadImage(bitmap, "placeholder_image", sharedWithMePath,
+                            uploadImage(bitmap, "placeholder_image.png", sharedWithMePath,
+                                Bitmap.CompressFormat.PNG,
                                 object : AsyncCallback<BackendlessFile> {
                                     override fun handleResponse(response: BackendlessFile?) {
                                         Log.d("FOLDER: ", "Папку створено")
@@ -84,15 +86,16 @@
                                     }
                                 })
 
-                            uploadImage(bitmap, "placeholder_image", remotePath,
-                                object : AsyncCallback<BackendlessFile>{
+                            uploadImage(bitmap, "placeholder_image.png", remotePath,
+                                Bitmap.CompressFormat.PNG,
+                                object : AsyncCallback<BackendlessFile> {
                                     override fun handleResponse(response: BackendlessFile?) {
-                                        Log.d("FOLDER: ", "folder created")
+                                        Log.d("FOLDER: ", "Папку створено")
+                                        removeFile("placeholder_image", remotePath)
                                     }
 
                                     override fun handleFault(fault: BackendlessFault?) {
                                         val errorMessage = fault?.message ?: "Помилка при створенні"
-
                                         Toast.makeText(this@RegistrationActivity,
                                             errorMessage, Toast.LENGTH_SHORT).show()
                                     }
@@ -142,13 +145,23 @@
 
         private fun getDrawableImagePath(context: Context, @DrawableRes drawableResId: Int):
                 String? {
-            val bitmap = BitmapFactory.decodeResource(context.resources, drawableResId)
+            val resources = context.resources
+            val uri = Uri.parse(
+                ContentResolver.SCHEME_ANDROID_RESOURCE +
+                        "://" + resources.getResourcePackageName(drawableResId) +
+                        '/' + resources.getResourceTypeName(drawableResId) +
+                        '/' + resources.getResourceEntryName(drawableResId)
+            )
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+
             val filesDir = context.filesDir
-            val imageFile = File(filesDir, "placeholder_image.png")
+            val imageFile = File(filesDir,
+                "${resources.getResourceEntryName(drawableResId)}.png")
 
             try {
                 FileOutputStream(imageFile).use { outputStream ->
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                    originalBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
                 }
                 return imageFile.absolutePath
             } catch (e: IOException) {
@@ -157,11 +170,16 @@
             return null
         }
 
-        private fun uploadImage(bitmap: Bitmap, remoteName: String, remotePath: String,
-                                callback: AsyncCallback<BackendlessFile>) {
+        private fun uploadImage(
+            bitmap: Bitmap,
+            remoteName: String,
+            remotePath: String,
+            format: Bitmap.CompressFormat,
+            callback: AsyncCallback<BackendlessFile>
+        ) {
             Backendless.Files.Android.upload(
                 bitmap,
-                Bitmap.CompressFormat.PNG,
+                format,
                 100,
                 remoteName,
                 remotePath,

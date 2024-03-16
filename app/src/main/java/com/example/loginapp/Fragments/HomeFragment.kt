@@ -1,6 +1,7 @@
 package com.example.loginapp.Fragments
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -21,6 +22,7 @@ import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
 import com.backendless.files.FileInfo
 import com.example.loginapp.Adapters.FolderAdapter
+import com.example.loginapp.FileActivity
 import com.example.loginapp.Listeners.FolderClickListener
 import com.example.loginapp.Models.Folder
 import com.example.loginapp.R
@@ -61,11 +63,11 @@ class HomeFragment : Fragment() {
 
     private var folderClickListener = object : FolderClickListener {
         override fun onClick(folder: Folder?) {
-            /*folder?.let {
-                val intent = Intent(activity, NextActivity::class.java)
-                intent.putExtra("folderPath", it.title)
+            folder?.let {
+                val intent = Intent(context, FileActivity::class.java)
+                intent.putExtra("folderPath", "users/$userNickname/${it.title}")
                 startActivity(intent)
-            }*/
+            }
         }
 
         override fun onLongClick(cardView: CardView?, folder: Folder?) {
@@ -82,7 +84,7 @@ class HomeFragment : Fragment() {
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_rename -> {
-                    showRenameDialog(folder!!.title)
+                    //showRenameDialog(folder!!.title)
                     true
                 }
                 R.id.action_delete -> {
@@ -307,34 +309,14 @@ class HomeFragment : Fragment() {
             val oldPath = "users/$userNickname/$oldName"
             val newPath = "users/$userNickname/$newName"
 
-            Backendless.Files.moveFile(oldPath, newPath, object : AsyncCallback<String?> {
+            Backendless.Files.renameFile(oldPath, newPath, object : AsyncCallback<String?> {
                 override fun handleResponse(response: String?) {
-                    Backendless.Files.removeDirectory(oldPath, object : AsyncCallback<Int?> {
-                        override fun handleResponse(response: Int?) {
-                            Log.d("Rename Folder",
-                                "Deleted")
-                        }
-
-                        override fun handleFault(fault: BackendlessFault?) {
-                            Log.e("Rename Folder",
-                                "Error: " +
-                                        "${fault?.message}")
-                        }
-                    })
-
-                    val position = foldersList.indexOfFirst { it.title == oldName }
-                    if (position != -1) {
-                        folderAdapter.updateFolderName(position, newName)
-                    } else {
-                        Log.e("Rename Folder", "Папку не знайдено")
-                    }
                 }
 
                 override fun handleFault(fault: BackendlessFault?) {
-                    Log.e("Rename Folder", "Помилка при перейменуванні: ${fault?.message}")
+                    Log.e("RenameFolder", "Failed to rename folder: ${fault?.message}")
                 }
             })
-
             loadFolders()
         }
     }
