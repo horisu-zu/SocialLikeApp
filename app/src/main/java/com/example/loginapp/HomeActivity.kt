@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.backendless.Backendless
+import com.backendless.BackendlessUser
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.loginapp.Fragments.HomeFragment

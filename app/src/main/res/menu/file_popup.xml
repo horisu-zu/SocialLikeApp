@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_download"
+        android:title="Завантажити файл"/>
+    <item
+        android:id="@+id/action_access"
+        android:title="Дати доступ"/>
+    <item
+        android:id="@+id/action_rename"
+        android:title="Перейменувати" />
+    <item
+        android:id="@+id/action_delete"
+        android:title="Видалити" />
+</menu>

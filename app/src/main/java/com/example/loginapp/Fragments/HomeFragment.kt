@@ -285,7 +285,7 @@ class HomeFragment : Fragment() {
         if (userNickname != null) {
             val path = "users/$userNickname/$folderName"
 
-            Backendless.Files.remove(path, object : AsyncCallback<Int?> {
+            Backendless.Files.removeDirectory(path, object : AsyncCallback<Int?> {
                 override fun handleResponse(response: Int?) {
                     val position = foldersList.indexOfFirst { it.title == folderName }
                     if (position != -1) {
@@ -314,7 +314,8 @@ class HomeFragment : Fragment() {
                 }
 
                 override fun handleFault(fault: BackendlessFault?) {
-                    Log.e("RenameFolder", "Failed to rename folder: ${fault?.message}")
+                    Log.e("RenameFolder", "Не вдалося перейменувати папку: " +
+                            "${fault?.message}")
                 }
             })
             loadFolders()
