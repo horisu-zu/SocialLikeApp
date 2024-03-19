@@ -8,10 +8,9 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.backendless.Backendless
-import com.backendless.BackendlessUser
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.example.loginapp.Fragments.HomeFragment
+import com.example.loginapp.Fragments.FolderFragment
 import com.google.android.material.navigation.NavigationView
 
 class HomeActivity : AppCompatActivity() {
@@ -33,12 +32,12 @@ class HomeActivity : AppCompatActivity() {
         avatarIcon = findViewById(R.id.avatarIcon)
         settingsIcon = findViewById(R.id.settingIcon)
 
-        if (savedInstanceState == null) {
+        /*if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction().replace(
                 R.id.fragment_container,
-                HomeFragment()
+                FolderFragment()
             ).commit()
-        }
+        }*/
 
         val userAvatarPath = user.getProperty("avatarPath").toString()
         Glide.with(this)
@@ -53,13 +52,16 @@ class HomeActivity : AppCompatActivity() {
         profileNavigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_home -> {
+                    true
+                }
+                R.id.nav_folders -> {
                     supportFragmentManager.beginTransaction().replace(
                         R.id.fragment_container,
-                        HomeFragment()
+                        FolderFragment()
                     ).commit()
                     true
                 }
-                R.id.nav_settings -> {
+                R.id.nav_bookmarks -> {
                     true
                 }
                 R.id.nav_list -> {

@@ -28,7 +28,7 @@ import com.example.loginapp.Models.Folder
 import com.example.loginapp.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class HomeFragment : Fragment() {
+class FolderFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var folderAdapter: FolderAdapter

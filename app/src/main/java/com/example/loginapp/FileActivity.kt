@@ -2,6 +2,7 @@ package com.example.loginapp
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -10,6 +11,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.webkit.MimeTypeMap
 import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -23,10 +25,19 @@ import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
 import com.backendless.files.BackendlessFile
 import com.backendless.files.FileInfo
+import com.backendless.persistence.DataQueryBuilder
 import com.example.loginapp.Adapters.FileAdapter
 import com.example.loginapp.Listeners.FolderFileClickListener
 import com.example.loginapp.Models.FolderFile
+import com.example.loginapp.Models.User
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -45,6 +56,7 @@ class FileActivity : AppCompatActivity() {
     private val PICK_FILE_REQUEST = 1648
     private val REQUEST_IMAGE_CAPTURE = 1914
     //private var filePath: String = ""
+    private val userList: MutableList<User> = mutableListOf()
     private var currentFolderPath: String = ""
     private val Application_ID : String = "7FD7EA68-8D2D-9F4D-FF0A-5ADB25284600"
     private val BASE_URL = "https://develop.backendless.com/$Application_ID/console/files/view/"
@@ -61,10 +73,12 @@ class FileActivity : AppCompatActivity() {
         recyclerView.adapter = fileAdapter
 
         val folderPath = intent.getStringExtra("folderPath")
+        getUsers()
 
         if (!folderPath.isNullOrEmpty()) {
             loadFiles(folderPath)
             currentFolderPath = folderPath
+            Log.e("CURRENT FOLDER PATH", currentFolderPath)
         }
 
         addButton.setOnClickListener {
@@ -85,7 +99,7 @@ class FileActivity : AppCompatActivity() {
 
     private var fileClickListener = object : FolderFileClickListener {
         override fun onClick(file: FolderFile) {
-            openFile(file.file)
+            openFile(file)
         }
 
         override fun onLongClick(cardView: CardView?, file: FolderFile) {
@@ -100,10 +114,11 @@ class FileActivity : AppCompatActivity() {
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_download -> {
-                    downloadFile(fileFolder!!.file.path, fileFolder.fileName)
+                    downloadFile(fileFolder!!)
                     true
                 }
                 R.id.action_access -> {
+                    showAccessDialog(userList, fileFolder!!)
                     true
                 }
                 R.id.action_rename -> {
@@ -121,7 +136,9 @@ class FileActivity : AppCompatActivity() {
         popupMenu.show()
     }
 
-    private fun downloadFile(url: String, fileName: String) {
+    private fun downloadFile(fileFolder: FolderFile) {
+        val url = fileFolder.filePath
+        val fileName = fileFolder.fileName
         val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadsDir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
 
@@ -275,8 +292,7 @@ class FileActivity : AppCompatActivity() {
                         val files = fileInfoList.mapNotNull { fileInfo ->
                             val fileName = fileInfo?.name ?: ""
                             val fileType = getFileType(fileName)
-                            val path = "$BASE_URL$folderPath/$fileName"
-                            val filePath = File(path)
+                            val filePath = fileInfo!!.publicUrl
                             Log.d(
                                 "FileActivity", "File name: $fileName, " +
                                         "File type: $fileType, File: $filePath"
@@ -291,6 +307,77 @@ class FileActivity : AppCompatActivity() {
                     Log.e("FileActivity", "Failed to load files: ${fault?.message}")
                 }
             })
+    }
+
+    private fun showAccessDialog(userList: List<User>, fileFolder: FolderFile) {
+        val userNames = userList.map { it.nickname }.toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle("Select User")
+            .setItems(userNames) { dialog, which ->
+                val selectedUser = userList[which]
+                grantAccessToFile(selectedUser, fileFolder)
+            }
+            .setNegativeButton("Cancel") { dialog, which ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun getUsers() {
+        val currentObjectId = Backendless.UserService.CurrentUser().objectId
+        val whereClause = "objectId != '$currentObjectId'"
+
+        val queryBuilder = DataQueryBuilder.create().setWhereClause(whereClause)
+
+        Backendless.Data.of("Users").find(queryBuilder,
+            object : AsyncCallback<List<Map<*, *>?>?> {
+                override fun handleResponse(foundUsers: List<Map<*, *>?>?) {
+                    foundUsers?.forEach { userData ->
+                        val user = User(
+                            email = userData!!["email"].toString(),
+                            password = userData["password"].toString(),
+                            name = userData["name"].toString(),
+                            nickname = userData["nickname"].toString(),
+                            age = userData["age"].toString().toInt(),
+                            gender = userData["gender"].toString(),
+                            country = userData["country"].toString(),
+                            subscribersCount = userData["subscribersCount"].toString().toInt(),
+                            subscriptionsCount = userData["subscriptionsCount"].toString().toInt(),
+                            avatarPath = userData["avatarPath"].toString()
+                        )
+                        userList.add(user)
+                        Log.e("USER", user.nickname)
+                    }
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    Log.e("Error", fault.message)
+                }
+        })
+    }
+
+    private fun grantAccessToFile(user: User, fileFolder: FolderFile) {
+        val fileName = fileFolder.fileName
+        val sharedFileName = "${fileName.substringBeforeLast('.')}.txt"
+        val sharedFilePath = "users/${user.nickname}/shared with me/$sharedFileName"
+
+        val fileUrl = "${BASE_URL}${currentFolderPath}/$fileName"
+
+        Backendless.Files.saveFile(
+            sharedFilePath,
+            fileUrl.toByteArray(),
+            true,
+            object : AsyncCallback<String> {
+                override fun handleResponse(response: String?) {
+                    Log.d("FileActivity", "File shared successfully")
+                }
+
+                override fun handleFault(fault: BackendlessFault?) {
+                    Log.e("FileActivity", "Failed to share file: ${fault?.message}")
+                }
+            }
+        )
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -344,10 +431,54 @@ class FileActivity : AppCompatActivity() {
             })
     }
 
+    private fun openFile(file: FolderFile) {
+        val filePath = file.filePath
 
-    fun openFile(file: File) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(file.path))
-        startActivity(intent)
+        if (currentFolderPath.contains("shared with me")) {
+            readFile(filePath,
+                onSuccess = { fileContent ->
+                    Log.i(TAG, "File content: $fileContent")
+                    val intent = Intent(applicationContext, WebViewActivity::class.java)
+                    intent.putExtra("fileUrl", fileContent)
+                    startActivity(intent)
+                },
+                onFailure = { errorMessage ->
+                    Log.e(TAG, errorMessage)
+                }
+            )
+        } else {
+            val intent = Intent(applicationContext, WebViewActivity::class.java)
+            intent.putExtra("fileUrl", filePath)
+            startActivity(intent)
+        }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun readFile(fileUrl: String, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
+        GlobalScope.launch(Dispatchers.IO) {
+            val client = OkHttpClient()
+            val request = Request.Builder()
+                .url(fileUrl)
+                .build()
+
+            try {
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val fileContent = response.body()!!.string()
+                    withContext(Dispatchers.Main) {
+                        onSuccess(fileContent)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onFailure("Server returned non-successful response")
+                    }
+                }
+            } catch (e: IOException) {
+                withContext(Dispatchers.Main) {
+                    onFailure("Error reading file: ${e.message}")
+                }
+            }
+        }
     }
 
     private fun getFileType(fileName: String): String {

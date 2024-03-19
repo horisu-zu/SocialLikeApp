@@ -5,6 +5,6 @@ import java.io.File
 class FolderFile(
     val fileName: String,
     val fileType: String,
-    val file: File
+    val filePath: String
 ) {
 }

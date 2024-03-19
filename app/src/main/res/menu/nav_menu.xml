@@ -14,7 +14,13 @@
             app:actionLayout="@layout/menu_item"/>
 
         <item
-            android:id="@+id/nav_settings"
+            android:id="@+id/nav_folders"
+            android:icon="@drawable/ic_folder"
+            android:title="Папки"
+            app:actionLayout="@layout/menu_item" />
+
+        <item
+            android:id="@+id/nav_bookmarks"
             android:icon="@drawable/ic_bookmark"
             android:title="Закладки"
             app:actionLayout="@layout/menu_item" />
