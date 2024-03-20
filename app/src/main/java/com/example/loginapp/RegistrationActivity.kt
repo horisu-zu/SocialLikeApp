@@ -18,7 +18,6 @@
     import com.backendless.exceptions.BackendlessFault
     import com.backendless.files.BackendlessFile
     import com.google.android.material.button.MaterialButton
-    import java.io.ByteArrayOutputStream
     import java.io.File
     import java.io.FileOutputStream
     import java.io.IOException
@@ -55,6 +54,7 @@
                 user.password = password
                 user.setProperty("name", nameEditText.text.toString())
                 user.setProperty("nickname", nicknameEditText.text.toString())
+                user.setProperty("baseNickname", nicknameEditText.text)
                 user.setProperty("age", age)
                 user.setProperty("gender", genderEditText.text.toString())
                 user.setProperty("country", countryEditText.text.toString())

@@ -28,6 +28,7 @@ import com.backendless.files.FileInfo
 import com.backendless.persistence.DataQueryBuilder
 import com.example.loginapp.Adapters.FileAdapter
 import com.example.loginapp.Listeners.FolderFileClickListener
+import com.example.loginapp.Models.Defaults
 import com.example.loginapp.Models.FolderFile
 import com.example.loginapp.Models.User
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -58,8 +59,8 @@ class FileActivity : AppCompatActivity() {
     //private var filePath: String = ""
     private val userList: MutableList<User> = mutableListOf()
     private var currentFolderPath: String = ""
-    private val Application_ID : String = "7FD7EA68-8D2D-9F4D-FF0A-5ADB25284600"
-    private val BASE_URL = "https://develop.backendless.com/$Application_ID/console/files/view/"
+    private val BASE_URL = "https://develop.backendless.com/${Defaults.applicationId}" +
+            "/console/files/view/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -310,7 +311,7 @@ class FileActivity : AppCompatActivity() {
     }
 
     private fun showAccessDialog(userList: List<User>, fileFolder: FolderFile) {
-        val userNames = userList.map { it.nickname }.toTypedArray()
+        val userNames = userList.map { it.baseNickname }.toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle("Select User")
@@ -339,6 +340,7 @@ class FileActivity : AppCompatActivity() {
                             password = userData["password"].toString(),
                             name = userData["name"].toString(),
                             nickname = userData["nickname"].toString(),
+                            baseNickname = userData["baseNickname"].toString(),
                             age = userData["age"].toString().toInt(),
                             gender = userData["gender"].toString(),
                             country = userData["country"].toString(),
@@ -347,7 +349,7 @@ class FileActivity : AppCompatActivity() {
                             avatarPath = userData["avatarPath"].toString()
                         )
                         userList.add(user)
-                        Log.e("USER", user.nickname)
+                        Log.e("USER", user.baseNickname)
                     }
                 }
 
@@ -360,7 +362,7 @@ class FileActivity : AppCompatActivity() {
     private fun grantAccessToFile(user: User, fileFolder: FolderFile) {
         val fileName = fileFolder.fileName
         val sharedFileName = "${fileName.substringBeforeLast('.')}.txt"
-        val sharedFilePath = "users/${user.nickname}/shared with me/$sharedFileName"
+        val sharedFilePath = "users/${user.baseNickname}/shared with me/$sharedFileName"
 
         val fileUrl = "${BASE_URL}${currentFolderPath}/$fileName"
 
@@ -440,6 +442,7 @@ class FileActivity : AppCompatActivity() {
                     Log.i(TAG, "File content: $fileContent")
                     val intent = Intent(applicationContext, WebViewActivity::class.java)
                     intent.putExtra("fileUrl", fileContent)
+                    intent.putExtra("currentUser", Backendless.UserService.CurrentUser())
                     startActivity(intent)
                 },
                 onFailure = { errorMessage ->

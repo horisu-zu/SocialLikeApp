@@ -5,6 +5,7 @@ class User(
     var password: String,
     var name: String,
     var nickname: String,
+    var baseNickname: String,
     var age: Int,
     var gender: String,
     var country: String,

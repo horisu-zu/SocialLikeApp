@@ -14,6 +14,7 @@ import com.backendless.BackendlessUser
 import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessException
 import com.backendless.exceptions.BackendlessFault
+import com.example.loginapp.Models.Defaults
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 
@@ -21,8 +22,6 @@ import com.google.android.material.card.MaterialCardView
 class MainActivity : AppCompatActivity() {
 
     private var isCheckBoxSelected : Boolean = false
-    private val applicationId : String = "7FD7EA68-8D2D-9F4D-FF0A-5ADB25284600"
-    private val apiKey : String = "CB86EDC0-E1F2-4A70-886B-32F00FDC755C"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +35,8 @@ class MainActivity : AppCompatActivity() {
             finish()
         } else {}
 
-        Backendless.initApp(this, applicationId, apiKey)
+        Backendless.setUrl(Defaults.serverUrl)
+        Backendless.initApp(applicationContext, Defaults.applicationId, Defaults.apiKey)
 
         val loginEditText: EditText = findViewById(R.id.loginEdit)
         val passwordEditText: EditText = findViewById(R.id.passwordEdit)

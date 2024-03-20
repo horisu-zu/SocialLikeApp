@@ -35,7 +35,7 @@ class FolderFragment : Fragment() {
     private lateinit var addButton: FloatingActionButton
     private var foldersList: MutableList<Folder> = mutableListOf()
     private val currentUser: BackendlessUser = Backendless.UserService.CurrentUser()
-    private val userNickname: String? = currentUser.getProperty("nickname") as? String
+    private val userNickname: String? = currentUser.getProperty("baseNickname") as? String
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreateView(
@@ -167,7 +167,8 @@ class FolderFragment : Fragment() {
     }
 
     private fun createFolder(folderName: String) {
-        val userNickname = Backendless.UserService.CurrentUser().getProperty("nickname") as? String
+        val userNickname = Backendless.UserService.CurrentUser().getProperty("baseNickname")
+                as? String
         if (userNickname != null) {
             val path = "users/$userNickname/$folderName"
 

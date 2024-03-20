@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.backendless.Backendless
+import com.backendless.BackendlessUser
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.loginapp.Fragments.FolderFragment
@@ -82,8 +83,8 @@ class HomeActivity : AppCompatActivity() {
         val userNameTextView = navHeader.findViewById<TextView>(R.id.nameTextView)
         val userNicknameTextView = navHeader.findViewById<TextView>(R.id.nicknameTextView)
         val userAvatarImageView = navHeader.findViewById<ImageView>(R.id.avatarImageView)
-        val userSubscribersCount = navHeader.findViewById<TextView>(R.id.subscribersTextView)
-        val userSubscriptionsCount = navHeader.findViewById<TextView>(R.id.subscriptionsTextView)
+        val userSubscribersCount = navHeader.findViewById<TextView>(R.id.subscribersCount)
+        val userSubscriptionsCount = navHeader.findViewById<TextView>(R.id.subscriptionsCount)
 
         if (user != null) {
             userNameTextView.text = user.getProperty("name").toString()
@@ -94,10 +95,8 @@ class HomeActivity : AppCompatActivity() {
                 .apply(RequestOptions().circleCrop())
                 .into(userAvatarImageView)
 
-            userSubscribersCount.text = "Кількість підписників: " +
-                    user.getProperty("subscribersCount").toString()
-            userSubscriptionsCount.text = "Кількість підписок: " +
-                    user.getProperty("subscriptionsCount").toString()
+            userSubscribersCount.text = user.getProperty("subscribersCount").toString()
+            userSubscriptionsCount.text = user.getProperty("subscriptionsCount").toString()
         } else {
         }
     }

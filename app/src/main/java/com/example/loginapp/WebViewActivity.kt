@@ -10,7 +10,10 @@ class WebViewActivity : AppCompatActivity() {
         setContentView(R.layout.activity_web_view)
 
         val fileUrl = intent.getStringExtra("fileUrl")
+
         val webView: WebView = findViewById(R.id.webView)
+        webView.settings.loadWithOverviewMode = true
+        webView.settings.useWideViewPort = true
         webView.loadUrl(fileUrl!!)
     }
 }

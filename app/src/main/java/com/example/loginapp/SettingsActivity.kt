@@ -17,6 +17,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var logoutCard: LinearLayout
     private lateinit var deleteCard: LinearLayout
+    private lateinit var configurationCard: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +25,7 @@ class SettingsActivity : AppCompatActivity() {
 
         logoutCard = findViewById(R.id.logoutCard)
         deleteCard = findViewById(R.id.deleteCard)
+        configurationCard = findViewById(R.id.configurationProfileCard)
 
         logoutCard.setOnClickListener {
             AlertDialog.Builder(this)
@@ -49,6 +51,12 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         deleteCard.setOnClickListener {
+        }
+
+        configurationCard.setOnClickListener {
+            val intent = Intent(this@SettingsActivity,
+                ConfigurationActivity::class.java)
+            startActivity(intent)
         }
     }
 }
