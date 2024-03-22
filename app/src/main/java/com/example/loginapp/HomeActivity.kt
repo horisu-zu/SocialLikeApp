@@ -55,6 +55,12 @@ class HomeActivity : AppCompatActivity() {
                 R.id.nav_home -> {
                     true
                 }
+                R.id.nav_profile -> {
+                    val intent = Intent(this@HomeActivity, ProfileActivity::class.java)
+                    startActivity(intent)
+
+                    true
+                }
                 R.id.nav_folders -> {
                     supportFragmentManager.beginTransaction().replace(
                         R.id.fragment_container,

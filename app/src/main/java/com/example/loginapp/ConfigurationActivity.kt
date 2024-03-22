@@ -37,6 +37,7 @@ class ConfigurationActivity : AppCompatActivity() {
     private lateinit var editNickname: EditText
     private lateinit var editAvatar: FloatingActionButton
     private lateinit var saveButton: CardView
+    private lateinit var passwordCard: CardView
 
     private lateinit var previewAvatar: ImageView
     private lateinit var previewName: TextView
@@ -53,6 +54,7 @@ class ConfigurationActivity : AppCompatActivity() {
         editNickname = findViewById(R.id.editNickname)
         editAvatar = findViewById(R.id.fabUploadImage)
         saveButton = findViewById(R.id.saveCard)
+        passwordCard = findViewById(R.id.passwordCard)
 
         previewAvatar = findViewById(R.id.avatarImageView)
         previewName = findViewById(R.id.nameTextView)
@@ -78,6 +80,14 @@ class ConfigurationActivity : AppCompatActivity() {
                 }
             }
             dialogBuilder.show()
+        }
+
+        passwordCard.setOnClickListener {
+            val intent = Intent(this@ConfigurationActivity,
+                PasswordConfigurationActivity::class.java)
+            intent.putExtra("user", user)
+
+            startActivity(intent)
         }
 
         saveButton.setOnClickListener {
@@ -235,7 +245,7 @@ class ConfigurationActivity : AppCompatActivity() {
                     val imageNames = mutableListOf<String>()
                     response?.forEach { fileInfo ->
                         val extension = fileInfo.name.substringAfterLast(".")
-                            if (isImageFile(extension)) {
+                        if (isImageFile(extension)) {
                             imageNames.add(fileInfo.name)
                         }
                     }

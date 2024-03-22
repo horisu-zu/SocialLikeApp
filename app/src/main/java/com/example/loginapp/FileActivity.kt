@@ -440,9 +440,10 @@ class FileActivity : AppCompatActivity() {
             readFile(filePath,
                 onSuccess = { fileContent ->
                     Log.i(TAG, "File content: $fileContent")
-                    val intent = Intent(applicationContext, WebViewActivity::class.java)
-                    intent.putExtra("fileUrl", fileContent)
-                    intent.putExtra("currentUser", Backendless.UserService.CurrentUser())
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.data = Uri.parse(fileContent)
+                    //intent.putExtra("fileUrl", fileContent)
+                    //intent.putExtra("currentUser", Backendless.UserService.CurrentUser())
                     startActivity(intent)
                 },
                 onFailure = { errorMessage ->
