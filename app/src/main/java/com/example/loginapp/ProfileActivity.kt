@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.google.android.gms.location.*
+import com.google.android.gms.location.LocationResult
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -43,8 +44,10 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var configurationCard: CardView
     private lateinit var postItem: TextView
     private lateinit var likeItem: TextView
+    private lateinit var placeItem: TextView
     private lateinit var postIndicator: View
     private lateinit var likeIndicator: View
+    private lateinit var placeIndicator: View
 
     private val LOCATION_REQUEST_CODE = 1869
     private lateinit var locationCallback: LocationCallback
@@ -67,20 +70,26 @@ class ProfileActivity : AppCompatActivity() {
         configurationCard = findViewById(R.id.configurationCard)
         postItem = findViewById(R.id.postNavigationItem)
         likeItem = findViewById(R.id.likeNavigationItem)
+        placeItem = findViewById(R.id.placeNavigationItem)
 
         postIndicator = findViewById(R.id.postIndicator)
         likeIndicator = findViewById(R.id.likeIndicator)
+        placeIndicator = findViewById(R.id.placeIndicator)
 
-        isPostSelected(true)
+        selectNavigationItem(R.id.postNavigationItem)
 
         getUserInfo()
 
         postItem.setOnClickListener {
-            isPostSelected(true)
+            selectNavigationItem(R.id.postNavigationItem)
         }
 
         likeItem.setOnClickListener {
-            isPostSelected(false)
+            selectNavigationItem(R.id.likeNavigationItem)
+        }
+
+        placeItem.setOnClickListener {
+            selectNavigationItem(R.id.placeNavigationItem)
         }
 
         backCard.setOnClickListener {
@@ -118,25 +127,24 @@ class ProfileActivity : AppCompatActivity() {
         Picasso.get().load(avatarPath).into(profileAvatar)
     }
 
-    private fun isPostSelected(isPostsSelected: Boolean) {
-        if(isPostsSelected) {
-            postIndicator.visibility = View.VISIBLE
-            likeIndicator.visibility = View.INVISIBLE
-        } else {
-            postIndicator.visibility = View.INVISIBLE
-            likeIndicator.visibility = View.VISIBLE
-        }
+    private fun selectNavigationItem(selectedItemId: Int) {
+        postIndicator.visibility = if (selectedItemId == R.id.postNavigationItem)
+            View.VISIBLE else View.INVISIBLE
+        likeIndicator.visibility = if (selectedItemId == R.id.likeNavigationItem)
+            View.VISIBLE else View.INVISIBLE
+        placeIndicator.visibility = if (selectedItemId == R.id.placeNavigationItem)
+            View.VISIBLE else View.INVISIBLE
     }
 
     private fun getCurrentLocation() {
         val locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
+        val locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
                 locationResult ?: return
                 for (location in locationResult.locations) {
                     updateLocation(location)
-                    locationClient.removeLocationUpdates(locationCallback)
+                    locationClient.removeLocationUpdates(this)
                     break
                 }
             }
@@ -154,6 +162,7 @@ class ProfileActivity : AppCompatActivity() {
                 locationCallback, Looper.getMainLooper())
         }
     }
+
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
                                             grantResults: IntArray) {

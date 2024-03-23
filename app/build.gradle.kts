@@ -37,7 +37,8 @@ android {
 
 dependencies {
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.google.android.gms:play-services-location:18.0.0")
+    implementation ("org.osmdroid:osmdroid-android:6.1.18")
+    implementation ("com.google.android.gms:play-services-location:21.2.0")
     implementation ("com.squareup.retrofit2:converter-scalars:2.9.0")
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     implementation ("com.squareup.picasso:picasso:2.8")
