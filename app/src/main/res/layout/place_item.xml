@@ -8,7 +8,7 @@
 
     <ImageView
         android:id="@+id/locationImage"
-        android:layout_width="250dp"
+        android:layout_width="300dp"
         android:layout_height="250dp"
         android:layout_gravity="center"
         android:scaleType="centerCrop"
@@ -25,17 +25,8 @@
         android:layout_marginBottom="8dp"/>
 
     <TextView
-        android:id="@+id/locationView"
-        android:text="some location..."
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textColor="@color/white"
-        android:layout_marginBottom="8dp"/>
-
-    <TextView
-        android:id="@+id/metadataView"
-        android:text="some tags..."
+        android:id="@+id/cathegoryView"
+        android:text="some cathegory..."
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="14sp"
@@ -52,7 +43,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="some user..."
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:textColor="@color/white"
             android:alpha="0.8"/>
 
@@ -66,11 +57,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="some time..."
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:textColor="@color/white"
             android:alpha="0.8"/>
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/locationView"
+        android:text="some location..."
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:alpha="0.8"
+        android:textColor="@color/white"
+        android:layout_marginVertical="8dp"/>
+
+    <TextView
+        android:id="@+id/metadataView"
+        android:text="some tags..."
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:textColor="@color/white"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -88,12 +97,20 @@
             android:textColor="@color/white"/>
 
         <TextView
-            android:text="Like"
+            android:id="@+id/likeCount"
+            android:text="LikeCount"
             android:textColor="@color/white"
             android:layout_gravity="center_vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
+        <ImageView
+            android:id="@+id/bookmarkView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_bookmark_empty"
+            android:layout_marginEnd="5dp"/>
     </LinearLayout>
 
 </LinearLayout>

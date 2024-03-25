@@ -7,11 +7,10 @@
     tools:context=".PlaceActivity"
     android:background="@color/black">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/placesRecycler"
+    <FrameLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent" />
 
     <Button
         android:id="@+id/addButton"

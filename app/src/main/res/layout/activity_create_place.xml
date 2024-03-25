@@ -18,16 +18,41 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <EditText
-                android:id="@+id/descriptionEditText"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/descriptionLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Опис"
-                android:textSize="15sp"
-                android:textColorHint="@color/black"
-                android:textColor="@color/black"
-                android:layout_marginBottom="15dp"/>
+                app:counterEnabled="true"
+                app:counterMaxLength="100"
+                app:errorEnabled="true"
+                app:helperText="Кількість символів">
 
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/descriptionEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Оберіть категорію"
+                android:layout_marginVertical="5dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+                <AutoCompleteTextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:padding="10dp"
+                    />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -35,15 +60,15 @@
                 android:text="Місцеположення: "
                 android:textSize="15sp"
                 android:textColor="@color/black"
-                android:layout_marginBottom="5dp"/>
+                android:layout_marginVertical="5dp"/>
 
 
             <TextView
                 android:id="@+id/locationTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="..."
-                android:textSize="15sp"
+                android:text="Оберіть локацію..."
+                android:textSize="13sp"
                 android:textColor="@color/black"
                 android:layout_marginBottom="15dp"/>
 

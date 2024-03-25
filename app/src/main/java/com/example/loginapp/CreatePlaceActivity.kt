@@ -11,6 +11,8 @@ import android.Manifest
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -19,24 +21,31 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
+import com.backendless.Backendless
+import com.backendless.async.callback.AsyncCallback
+import com.backendless.exceptions.BackendlessFault
 import com.example.loginapp.Models.Place
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
 class CreatePlaceActivity : AppCompatActivity() {
-    private lateinit var descriptionEditText: EditText
+    private lateinit var descriptionLayout: TextInputLayout
+    private lateinit var descriptionEditText: TextInputEditText
     private lateinit var locationTextView: TextView
     private lateinit var tagsEdit: EditText
     private lateinit var locationImage: ImageView
     private lateinit var addImageCard: CardView
     private lateinit var savePlaceButton: Button
-    private lateinit var place: Place
+    private lateinit var cathegoryField: TextInputLayout
 
     private val GALLERY_REQUEST_CODE: Int = 1648
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var tagsList: String
 
     private val SELECT_LOCATION_REQUEST_CODE = 476
+    private lateinit var cathegoryItems: List<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,12 +53,18 @@ class CreatePlaceActivity : AppCompatActivity() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        descriptionLayout = findViewById(R.id.descriptionLayout)
         descriptionEditText = findViewById(R.id.descriptionEditText)
+        cathegoryField = findViewById(R.id.textField)
         locationTextView = findViewById(R.id.locationTextView)
         tagsEdit = findViewById(R.id.tagsEdit)
         locationImage = findViewById(R.id.locationImage)
         addImageCard = findViewById(R.id.addImageCard)
         savePlaceButton = findViewById(R.id.savePlaceButton)
+
+        cathegoryItems = getCategories()
+        val adapter = ArrayAdapter(this, R.layout.list_item, cathegoryItems)
+        (cathegoryField.editText as? AutoCompleteTextView)?.setAdapter(adapter)
 
         locationTextView.setOnClickListener {
             showLocationOptionsDialog()
@@ -58,6 +73,23 @@ class CreatePlaceActivity : AppCompatActivity() {
         savePlaceButton.setOnClickListener {
             tagsList = tagsEdit.text.toString()
             getTags(tagsList)
+
+            val userNickname = Backendless.UserService.CurrentUser().getProperty("nickname")
+            val description = descriptionEditText.text.toString()
+            val location = locationTextView.text.toString()
+            val cathegory = cathegoryField.editText?.text.toString()
+            val imageUrl = ""
+
+            val placeData = HashMap<String, Any>()
+            placeData["description"] = description
+            placeData["cathegory"] = cathegory
+            placeData["coordinates"] = location
+            placeData["hashtags"] = tagsList
+            placeData["imageUrl"] = imageUrl
+            placeData["likeCount"] = 0
+            placeData["authorNickname"] = userNickname
+
+            savePlaceToBackendless(placeData)
         }
 
         addImageCard.setOnClickListener {
@@ -65,6 +97,20 @@ class CreatePlaceActivity : AppCompatActivity() {
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             startActivityForResult(galleryIntent, GALLERY_REQUEST_CODE)
         }
+
+        descriptionEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                if (s != null && s.length > 100) {
+                    descriptionLayout.error = "Перевищено максимальну кількість символів"
+                } else {
+                    descriptionLayout.error = null
+                }
+            }
+        })
 
         tagsEdit.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -94,8 +140,8 @@ class CreatePlaceActivity : AppCompatActivity() {
             locationImage.setImageURI(selectedImage)
         }
         else if (requestCode == SELECT_LOCATION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            val latitude = data?.getDoubleExtra("latitude", 0.0)
-            val longitude = data?.getDoubleExtra("longitude", 0.0)
+            val latitude = data?.getStringExtra("latitude").toString()
+            val longitude = data?.getStringExtra("longitude").toString()
         }
     }
 
@@ -156,8 +202,8 @@ class CreatePlaceActivity : AppCompatActivity() {
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
                 if (location != null) {
-                    val latitude = location.latitude
-                    val longitude = location.longitude
+                    val latitude = location.latitude.toString()
+                    val longitude = location.longitude.toString()
                     val coordinates = "POINT($longitude $latitude)"
 
                     locationTextView.text = coordinates
@@ -175,6 +221,37 @@ class CreatePlaceActivity : AppCompatActivity() {
         val intent = Intent(this, MapActivity::class.java)
         startActivityForResult(intent, SELECT_LOCATION_REQUEST_CODE)
     }
+
+    fun getCategories(): List<String> {
+        return listOf(
+            "Парки та сади",
+            "Музеї та галереї",
+            "Історичні місця",
+            "Ресторани та кав'ярні",
+            "Театри та кінотеатри",
+            "Пляжі та набережні",
+            "Магазини та ринки",
+            "Спортивні об'єкти",
+            "Пам'ятники та скульптури",
+            "Релігійні об'єкти"
+        )
+    }
+
+    private fun savePlaceToBackendless(placeData: HashMap<String, Any>) {
+        Backendless.Data.of("Place").save(placeData, object :
+                AsyncCallback<MutableMap<Any?, Any?>> {
+            override fun handleResponse(response: MutableMap<Any?, Any?>?) {
+                Toast.makeText(this@CreatePlaceActivity, "Місце успішно додано",
+                    Toast.LENGTH_SHORT).show()
+            }
+
+            override fun handleFault(fault: BackendlessFault) {
+                Toast.makeText(this@CreatePlaceActivity, "Помилка при " +
+                        "додаванні місця: ${fault.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
 
     companion object {
         private const val REQUEST_LOCATION_PERMISSION = 1
