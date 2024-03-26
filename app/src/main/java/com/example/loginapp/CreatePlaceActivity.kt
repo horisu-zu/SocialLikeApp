@@ -75,6 +75,7 @@ class CreatePlaceActivity : AppCompatActivity() {
             getTags(tagsList)
 
             val userNickname = Backendless.UserService.CurrentUser().getProperty("nickname")
+            val userId = Backendless.UserService.CurrentUser().objectId
             val description = descriptionEditText.text.toString()
             val location = locationTextView.text.toString()
             val cathegory = cathegoryField.editText?.text.toString()
@@ -88,6 +89,7 @@ class CreatePlaceActivity : AppCompatActivity() {
             placeData["imageUrl"] = imageUrl
             placeData["likeCount"] = 0
             placeData["authorNickname"] = userNickname
+            placeData["authorId"] = userId
 
             savePlaceToBackendless(placeData)
         }

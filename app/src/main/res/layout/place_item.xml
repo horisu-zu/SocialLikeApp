@@ -1,18 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/placeItemLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
     android:background="@color/black">
 
-    <ImageView
-        android:id="@+id/locationImage"
-        android:layout_width="300dp"
-        android:layout_height="250dp"
-        android:layout_gravity="center"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="8dp"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/white"
+        android:layout_marginBottom="8dp"
+        android:alpha="0.4"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/locationImage"
+            android:layout_width="300dp"
+            android:layout_height="250dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="8dp"
+            android:scaleType="centerCrop" />
+
+        <ImageView
+            android:id="@+id/imagePop"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:src="@drawable/ic_pop"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="5dp"/>
+
+    </RelativeLayout>
+
 
     <TextView
         android:id="@+id/descriptionView"
@@ -64,22 +88,13 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/locationView"
-        android:text="some location..."
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:alpha="0.8"
-        android:textColor="@color/white"
-        android:layout_marginVertical="8dp"/>
-
-    <TextView
         android:id="@+id/metadataView"
         android:text="some tags..."
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="13sp"
-        android:textColor="@color/white"/>
+        android:textColor="@color/white"
+        android:layout_marginTop="10dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -112,5 +127,12 @@
             android:src="@drawable/ic_bookmark_empty"
             android:layout_marginEnd="5dp"/>
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/white"
+        android:layout_marginTop="8dp"
+        android:alpha="0.4"/>
 
 </LinearLayout>

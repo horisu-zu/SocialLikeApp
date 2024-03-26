@@ -2,9 +2,11 @@ package com.example.loginapp.Adapters
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -12,9 +14,12 @@ import com.example.loginapp.Listeners.PlaceClickListener
 import com.example.loginapp.R
 import com.example.loginapp.Models.Place
 
-class PlaceAdapter(private val context: Context, private val dataList: List<Place>,
-        private val placeClickListener: PlaceClickListener) :
-    RecyclerView.Adapter<PlaceAdapter.ViewHolder>() {
+class PlaceAdapter(
+    private val context: Context,
+    private val dataList: List<Place>,
+    private val placeClickListener: PlaceClickListener,
+    private val currentUser: String) :
+        RecyclerView.Adapter<PlaceAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.place_item, parent,
@@ -25,32 +30,51 @@ class PlaceAdapter(private val context: Context, private val dataList: List<Plac
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val data = dataList[position]
 
-        holder.descriptionView.text = data.description
-        holder.cathegoryView.text = data.cathegory
-        holder.locationView.text = data.coordinates.toString()
-        holder.metadataView.text = data.hashtags
-        holder.usernameView.text = data.authorNickname
-        holder.creationDate.text = data.created
-        holder.likeCount.text = data.likeCount.toString()
+        with(holder) {
+            descriptionView.text = data.description
+            cathegoryView.text = data.cathegory
+            metadataView.text = data.hashtags
+            usernameView.text = data.authorNickname
+            creationDate.text = data.created
+            likeCount.text = data.likeCount.toString()
 
-        //holder.likeImage.setImageResource(R.drawable.ic_like)
+            val isLikedBy = data.likedBy.contains(currentUser)
+            likeImage.setImageResource(
+                if (isLikedBy) R.drawable.ic_like_pressed
+                else R.drawable.ic_like
+            )
 
-        holder.likeImage.setOnClickListener {
-            placeClickListener.onLikeClick(dataList.get(holder.adapterPosition))
-        }
+            likeImage.setOnClickListener {
+                placeClickListener.onLikeClick(data)
+            }
 
-        holder.bookmarkImage.setOnClickListener {
-            placeClickListener.onBookmarkClick(dataList.get(holder.adapterPosition))
-        }
+            bookmarkImage.setOnClickListener {
+                placeClickListener.onBookmarkClick(data)
+            }
 
-        if (data.imageUrl.isNullOrEmpty()) {
-            holder.locationImage.visibility = View.GONE
-        } else {
-            holder.locationImage.visibility = View.VISIBLE
-            Glide.with(context)
-                .load(data.imageUrl)
-                .placeholder(R.drawable.placeholder_image)
-                .into(holder.locationImage)
+            cathegoryView.setOnClickListener {
+                placeClickListener.onCategoryClick(data)
+            }
+
+            imagePop.setOnClickListener {
+                placeClickListener.onPopClick(data, imagePop)
+            }
+
+            if (data.imageUrl.isNullOrEmpty()) {
+                locationImage.visibility = View.GONE
+            } else {
+                locationImage.visibility = View.VISIBLE
+                Glide.with(context)
+                    .load(data.imageUrl)
+                    .placeholder(R.drawable.placeholder_image)
+                    .into(locationImage)
+            }
+
+            if (data.authorId == currentUser) {
+                imagePop.visibility = View.VISIBLE
+            } else {
+                imagePop.visibility = View.GONE
+            }
         }
     }
 
@@ -59,9 +83,10 @@ class PlaceAdapter(private val context: Context, private val dataList: List<Plac
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        //val layout: LinearLayout = itemView.findViewById(R.id.placeItemLayout)
+
         val descriptionView: TextView = itemView.findViewById(R.id.descriptionView)
         val cathegoryView: TextView = itemView.findViewById(R.id.cathegoryView)
-        val locationView: TextView = itemView.findViewById(R.id.locationView)
         val metadataView: TextView = itemView.findViewById(R.id.metadataView)
         val usernameView: TextView = itemView.findViewById(R.id.usernameView)
         val creationDate: TextView = itemView.findViewById(R.id.creationDate)
@@ -69,5 +94,6 @@ class PlaceAdapter(private val context: Context, private val dataList: List<Plac
         val likeImage: ImageView = itemView.findViewById(R.id.likeView)
         val bookmarkImage: ImageView = itemView.findViewById(R.id.bookmarkView)
         val locationImage: ImageView = itemView.findViewById(R.id.locationImage)
+        val imagePop: ImageView = itemView.findViewById(R.id.imagePop)
     }
 }

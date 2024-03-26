@@ -14,6 +14,7 @@
     import com.example.loginapp.Fragments.Place.PlaceFragment
     import com.example.loginapp.Models.Place
     import java.text.SimpleDateFormat
+    import java.util.Arrays
     import java.util.Date
     import java.util.Locale
 
@@ -42,6 +43,9 @@
                     response?.let { places ->
                         placeList.clear()
                         for (placeData in places) {
+                            val likedByArray = placeData["likedBy"] as? Array<String>
+                            val likedByList = likedByArray?.toList() ?: emptyList()
+
                             val place = Place(
                                 objectId = placeData["objectId"] as? String ?: "",
                                 description = placeData["description"] as? String ?: "",
@@ -51,12 +55,14 @@
                                 created = formatDate(placeData["created"] as? Date),
                                 imageUrl = placeData["imageUrl"] as? String?,
                                 likeCount = placeData["likeCount"] as? Int ?: 0,
-                                authorNickname = placeData["authorNickname"] as? String ?: ""
+                                authorNickname = placeData["authorNickname"] as? String ?: "",
+                                authorId = placeData["authorId"] as? String ?: "",
+                                likedBy = likedByList
                             )
+                            Log.e("LIKED BY", likedByList.toString())
                             placeList.add(place)
                         }
                     }
-
                     updateUI()
                 }
 

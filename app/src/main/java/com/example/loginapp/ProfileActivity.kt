@@ -15,18 +15,22 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import com.backendless.Backendless
 import com.backendless.BackendlessUser
 import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
+import com.backendless.persistence.DataQueryBuilder
+import com.backendless.persistence.Point
+import com.example.loginapp.Fragments.Place.EmptyPlaceFragment
+import com.example.loginapp.Fragments.Place.PlaceFragment
+import com.example.loginapp.Models.Place
 import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.google.android.gms.location.*
 import com.google.android.gms.location.LocationResult
-import org.json.JSONArray
-import org.json.JSONObject
 
 class ProfileActivity : AppCompatActivity() {
     private lateinit var user: BackendlessUser
@@ -52,11 +56,17 @@ class ProfileActivity : AppCompatActivity() {
     private val LOCATION_REQUEST_CODE = 1869
     private lateinit var locationCallback: LocationCallback
 
+    private lateinit var placeFragment: PlaceFragment
+    private var currentFragment: Fragment? = null
+    private val placeList: MutableList<Place> = ArrayList()
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
         user = Backendless.UserService.CurrentUser() ?: BackendlessUser()
+
+        getUserPlaceFromServer()
 
         profileName = findViewById(R.id.nameTextView)
         profileNickname = findViewById(R.id.nicknameTextView)
@@ -134,6 +144,10 @@ class ProfileActivity : AppCompatActivity() {
             View.VISIBLE else View.INVISIBLE
         placeIndicator.visibility = if (selectedItemId == R.id.placeNavigationItem)
             View.VISIBLE else View.INVISIBLE
+
+        if (selectedItemId == R.id.placeNavigationItem) {
+            loadFragment()
+        }
     }
 
     private fun getCurrentLocation() {
@@ -208,5 +222,67 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun convertToWKT(latitude: Double, longitude: Double): String {
         return "POINT($longitude $latitude)"
+    }
+
+    private fun getUserPlaceFromServer() {
+        val nickname = Backendless.UserService.CurrentUser().getProperty("nickname")
+
+        val whereClause = "authorNickname = '$nickname'"
+        val queryBuilder = DataQueryBuilder.create().setWhereClause(whereClause)
+
+        Backendless.Data.of("Place").find(queryBuilder,
+                object : AsyncCallback<List<MutableMap<Any?, Any?>>> {
+            override fun handleResponse(response: List<MutableMap<Any?, Any?>>?) {
+                response?.let { places ->
+                    placeList.clear()
+                    for (placeData in places) {
+                        val likedByArray = placeData["likedBy"] as? Array<String>
+                        val likedByList = likedByArray?.toList() ?: emptyList()
+
+                        val place = Place(
+                            objectId = placeData["objectId"] as? String ?: "",
+                            description = placeData["description"] as? String ?: "",
+                            cathegory = placeData["cathegory"] as? String ?: "",
+                            coordinates = (placeData["coordinates"] as? Point)!!,
+                            hashtags = placeData["hashtags"] as? String ?: "",
+                            created = formatDate(placeData["created"] as? Date),
+                            imageUrl = placeData["imageUrl"] as? String?,
+                            likeCount = placeData["likeCount"] as? Int ?: 0,
+                            authorNickname = placeData["authorNickname"] as? String ?: "",
+                            likedBy = likedByList
+                        )
+                        Log.e("LIKED BY", likedByList.toString())
+                        placeList.add(place)
+                    }
+                }
+            }
+
+            override fun handleFault(fault: BackendlessFault?) {
+                Log.e("GETTING DATA ERROR", "Error: $fault")
+            }
+        })
+    }
+
+    private fun loadFragment() {
+        if(placeList.isEmpty()) {
+            supportFragmentManager.beginTransaction().replace(
+                R.id.fragment_container,
+                EmptyPlaceFragment()
+            ).commit()
+        }
+        else {
+            val placeFragment = PlaceFragment()
+            placeFragment.setPlaceList(placeList)
+
+            supportFragmentManager.beginTransaction().replace(
+                R.id.fragment_container,
+                placeFragment
+            ).commit()
+        }
+    }
+
+    private fun formatDate(date: Date?): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return date?.let { dateFormat.format(it) } ?: ""
     }
 }
