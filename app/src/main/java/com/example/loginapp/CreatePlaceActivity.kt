@@ -90,6 +90,7 @@ class CreatePlaceActivity : AppCompatActivity() {
             placeData["likeCount"] = 0
             placeData["authorNickname"] = userNickname
             placeData["authorId"] = userId
+            placeData["likedBy"] = ""
 
             savePlaceToBackendless(placeData)
         }

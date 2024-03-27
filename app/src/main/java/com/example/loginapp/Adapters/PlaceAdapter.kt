@@ -16,7 +16,7 @@ import com.example.loginapp.Models.Place
 
 class PlaceAdapter(
     private val context: Context,
-    private val dataList: List<Place>,
+    private var dataList: List<Place>,
     private val placeClickListener: PlaceClickListener,
     private val currentUser: String) :
         RecyclerView.Adapter<PlaceAdapter.ViewHolder>() {
@@ -80,6 +80,11 @@ class PlaceAdapter(
 
     override fun getItemCount(): Int {
         return dataList.size
+    }
+
+    fun setPlaces(places: List<Place>) {
+        dataList = places
+        notifyDataSetChanged()
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
