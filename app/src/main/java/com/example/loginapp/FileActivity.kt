@@ -11,13 +11,15 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.webkit.MimeTypeMap
+import android.view.View
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.backendless.Backendless
@@ -32,6 +34,8 @@ import com.example.loginapp.Models.Defaults
 import com.example.loginapp.Models.FolderFile
 import com.example.loginapp.Models.User
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.squareup.picasso.Callback
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -54,13 +58,14 @@ class FileActivity : AppCompatActivity() {
     private lateinit var fileAdapter: FileAdapter
     private lateinit var addButton: FloatingActionButton
     private lateinit var cameraButton: FloatingActionButton
+    private lateinit var imageView: ImageView
     private val PICK_FILE_REQUEST = 1648
     private val REQUEST_IMAGE_CAPTURE = 1914
     //private var filePath: String = ""
     private val userList: MutableList<User> = mutableListOf()
     private var currentFolderPath: String = ""
-    private val BASE_URL = "https://develop.backendless.com/${Defaults.applicationId}" +
-            "/console/files/view/"
+    private val BASE_URL = "https://backendlessappcontent.com/${Defaults.applicationId}" +
+            "/${Defaults.apiKey}/files/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,6 +74,7 @@ class FileActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.fileRecycler)
         addButton = findViewById(R.id.addButton)
         cameraButton = findViewById(R.id.cameraButton)
+        imageView = findViewById<ImageView>(R.id.imageView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         fileAdapter = FileAdapter(emptyList(), fileClickListener)
         recyclerView.adapter = fileAdapter
@@ -84,6 +90,12 @@ class FileActivity : AppCompatActivity() {
 
         addButton.setOnClickListener {
             openFilePicker()
+        }
+
+        imageView.setOnClickListener {
+            if(imageView.isVisible) {
+                imageView.visibility = View.GONE
+            }
         }
 
         cameraButton.setOnClickListener {
@@ -440,11 +452,11 @@ class FileActivity : AppCompatActivity() {
             readFile(filePath,
                 onSuccess = { fileContent ->
                     Log.i(TAG, "File content: $fileContent")
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.data = Uri.parse(fileContent)
-                    //intent.putExtra("fileUrl", fileContent)
-                    //intent.putExtra("currentUser", Backendless.UserService.CurrentUser())
-                    startActivity(intent)
+                    if (isImageFile(fileContent)) {
+                        displayImage(Uri.parse(fileContent))
+                    } else {
+                        openFileExternal(Uri.parse(fileContent))
+                    }
                 },
                 onFailure = { errorMessage ->
                     Log.e(TAG, errorMessage)
@@ -455,6 +467,35 @@ class FileActivity : AppCompatActivity() {
             intent.putExtra("fileUrl", filePath)
             startActivity(intent)
         }
+    }
+
+    private fun isImageFile(filePath: String): Boolean {
+        val imageExtensions = arrayOf("jpg", "jpeg", "png", "gif")
+        val fileExtension = getFileExtension(filePath)
+        return imageExtensions.contains(fileExtension)
+    }
+
+    private fun getFileExtension(filePath: String): String {
+        return filePath.substring(filePath.lastIndexOf(".") + 1)
+    }
+
+    private fun displayImage(imageUri: Uri) {
+        Picasso.get().load(imageUri)
+            .into(imageView, object : Callback {
+                override fun onSuccess() {
+                    imageView.visibility = View.VISIBLE
+                }
+
+                override fun onError(e: Exception?) {
+                    Log.e(TAG, "Error loading image: $e")
+                }
+            })
+    }
+
+    private fun openFileExternal(fileUri: Uri) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = fileUri
+        startActivity(intent)
     }
 
     @OptIn(DelicateCoroutinesApi::class)

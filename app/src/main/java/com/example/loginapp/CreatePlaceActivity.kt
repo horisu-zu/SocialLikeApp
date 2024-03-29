@@ -1,16 +1,16 @@
 package com.example.loginapp
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.Manifest
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
@@ -19,16 +19,18 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import com.backendless.Backendless
 import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
-import com.example.loginapp.Models.Place
+import com.backendless.files.BackendlessFile
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import java.io.File
 
 class CreatePlaceActivity : AppCompatActivity() {
     private lateinit var descriptionLayout: TextInputLayout
@@ -46,6 +48,8 @@ class CreatePlaceActivity : AppCompatActivity() {
 
     private val SELECT_LOCATION_REQUEST_CODE = 476
     private lateinit var cathegoryItems: List<String>
+
+    private lateinit var selectedImagePath: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,20 +83,21 @@ class CreatePlaceActivity : AppCompatActivity() {
             val description = descriptionEditText.text.toString()
             val location = locationTextView.text.toString()
             val cathegory = cathegoryField.editText?.text.toString()
-            val imageUrl = ""
 
-            val placeData = HashMap<String, Any>()
-            placeData["description"] = description
-            placeData["cathegory"] = cathegory
-            placeData["coordinates"] = location
-            placeData["hashtags"] = tagsList
-            placeData["imageUrl"] = imageUrl
-            placeData["likeCount"] = 0
-            placeData["authorNickname"] = userNickname
-            placeData["authorId"] = userId
-            placeData["likedBy"] = ""
+            uploadImageToBackendless(selectedImagePath) { loadedImagePath ->
+                val placeData = HashMap<String, Any>()
+                placeData["description"] = description
+                placeData["cathegory"] = cathegory
+                placeData["coordinates"] = location
+                placeData["hashtags"] = tagsList
+                placeData["likeCount"] = 0
+                placeData["authorNickname"] = userNickname
+                placeData["authorId"] = userId
+                placeData["imageUrl"] = loadedImagePath
+                placeData["likedBy"] = "[]"
 
-            savePlaceToBackendless(placeData)
+                savePlaceToBackendless(placeData)
+            }
         }
 
         addImageCard.setOnClickListener {
@@ -141,11 +146,42 @@ class CreatePlaceActivity : AppCompatActivity() {
         if (requestCode == GALLERY_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
             val selectedImage: Uri? = data.data
             locationImage.setImageURI(selectedImage)
+            selectedImagePath = getPathFromURI(selectedImage)
         }
         else if (requestCode == SELECT_LOCATION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val latitude = data?.getStringExtra("latitude").toString()
             val longitude = data?.getStringExtra("longitude").toString()
+            val coordinates = "POINT($longitude $latitude)"
+
+            locationTextView.text = coordinates
         }
+    }
+
+    private fun getPathFromURI(uri: Uri?): String {
+        val cursor = contentResolver.query(uri!!, null, null, null,
+            null)
+        cursor!!.moveToFirst()
+        val idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
+        val path = cursor.getString(idx)
+        cursor.close()
+        return path
+    }
+
+    private fun uploadImageToBackendless(selectedImagePath: String, callback: (String) -> Unit) {
+        val userNickname: String = Backendless.UserService.CurrentUser().getProperty("baseNickname").toString()
+        val imagePath = "PlaceImages/$userNickname/"
+
+        Backendless.Files.upload(File(selectedImagePath), imagePath, object : AsyncCallback<BackendlessFile> {
+            override fun handleResponse(response: BackendlessFile?) {
+                val loadedImagePath = response?.fileURL ?: ""
+                callback(loadedImagePath)
+                Log.e("FILE URL", loadedImagePath)
+            }
+
+            override fun handleFault(fault: BackendlessFault) {
+                callback("")
+            }
+        })
     }
 
     private fun getTags(list: String): List<String> {
@@ -214,8 +250,7 @@ class CreatePlaceActivity : AppCompatActivity() {
                     Toast.makeText(
                         this, "Не вдалося отримати місцеположення",
                         Toast.LENGTH_SHORT
-                    )
-                        .show()
+                    ).show()
                 }
             }
     }
@@ -249,12 +284,15 @@ class CreatePlaceActivity : AppCompatActivity() {
             }
 
             override fun handleFault(fault: BackendlessFault) {
-                Toast.makeText(this@CreatePlaceActivity, "Помилка при " +
-                        "додаванні місця: ${fault.message}", Toast.LENGTH_SHORT).show()
+                Log.e("ERROR", "Помилка при " +
+                        "додаванні місця: ${fault.message}")
             }
         })
     }
 
+    interface ImageUploadCallback {
+        fun onImageUploaded(imageUrl: String)
+    }
 
     companion object {
         private const val REQUEST_LOCATION_PERMISSION = 1

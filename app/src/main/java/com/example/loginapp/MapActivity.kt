@@ -1,132 +1,138 @@
 package com.example.loginapp
 
 import android.Manifest
-import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
-import android.preference.PreferenceManager
-import android.view.MotionEvent
-import android.widget.Toast
+import android.util.Log
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration
-import org.osmdroid.events.MapEventsReceiver
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.MapEventsOverlay
-import org.osmdroid.views.overlay.Marker
 
 class MapActivity : AppCompatActivity() {
-    private lateinit var mapView: MapView
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private var selectedPoint: GeoPoint? = null
 
-    @SuppressLint("ClickableViewAccessibility")
+    private lateinit var mapView: MapView
+    private lateinit var mapController: IMapController
+    private lateinit var locationManager: LocationManager
+    private lateinit var btnSelectLocation: Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Configuration.getInstance().load(applicationContext,
-            PreferenceManager.getDefaultSharedPreferences(applicationContext))
         setContentView(R.layout.activity_map)
 
-        mapView = findViewById(R.id.map)
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
-        val mapController = mapView.controller
+        mapView = findViewById(R.id.mapView)
+        mapView.setTileSource(org.osmdroid.tileprovider.tilesource.TileSourceFactory.MAPNIK)
+        mapView.setBuiltInZoomControls(true)
+        mapController = mapView.controller
         mapController.setZoom(15.0)
+        Configuration.getInstance().userAgentValue = "SocialLikeApp/1.0"
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION_PERMISSION
-            )
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSIONS_REQUEST_LOCATION)
         } else {
-            getLastLocation()
+            setupLocation()
         }
 
-        val mapEventsOverlay = MapEventsOverlay(object : MapEventsReceiver {
-            override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
-                if (p != null) {
-                    selectedPoint = p
-                    addMarker(p)
-                    showToast("Latitude: ${p.latitude}, Longitude: ${p.longitude}")
-                }
-                return true
-            }
+        btnSelectLocation = findViewById(R.id.btnSelectLocation)
+        btnSelectLocation.setOnClickListener {
+            val centerPoint = mapView.mapCenter
+            val latitude = centerPoint.latitude
+            val longitude = centerPoint.longitude
 
-            override fun longPressHelper(p: GeoPoint?): Boolean {
-                return false
-            }
-        })
-
-        mapView.overlays.add(0, mapEventsOverlay)
-
-        mapView.setOnTouchListener { _, event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    mapView.controller.setCenter(mapView.projection.fromPixels(event.x.toInt(), event.y.toInt()))
-                    return@setOnTouchListener true
-                }
-                MotionEvent.ACTION_UP -> {
-                    selectedPoint = null
-                    return@setOnTouchListener true
-                }
-                else -> return@setOnTouchListener false
-            }
+            val resultIntent = Intent()
+            resultIntent.putExtra("latitude", latitude.toString())
+            resultIntent.putExtra("longitude", longitude.toString())
+            Log.e("COORDINATES", "$latitude/$longitude")
+            setResult(Activity.RESULT_OK, resultIntent)
+            finish()
         }
     }
 
-    private fun addMarker(point: GeoPoint) {
-        val marker = Marker(mapView)
-        marker.position = point
-        mapView.overlays.add(marker)
-        mapView.invalidate()
-    }
-
-    private fun getLastLocation() {
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                if (location != null) {
-                    mapView.controller.setCenter(GeoPoint(location.latitude, location.longitude))
-                }
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation()
-            } else {
-                showToast("Location permission denied")
+        when (requestCode) {
+            PERMISSIONS_REQUEST_LOCATION -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    setupLocation()
+                } else {
+                }
+                return
             }
         }
     }
 
-    override fun onBackPressed() {
-        val intent = Intent()
-        if (selectedPoint != null) {
-            intent.putExtra("latitude", selectedPoint?.latitude)
-            intent.putExtra("longitude", selectedPoint?.longitude)
+    private fun setupLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
         }
-        setResult(RESULT_OK, intent)
-        super.onBackPressed()
+
+        val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+
+        if (location != null) {
+            val latitude = location.latitude
+            val longitude = location.longitude
+            mapController.setCenter(GeoPoint(latitude, longitude))
+        } else {
+            requestLocationUpdates()
+        }
     }
 
-    private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    private fun requestLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
+            0f, locationListener)
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0,
+            0f, locationListener)
+    }
+
+    private val locationListener = object : LocationListener {
+        override fun onLocationChanged(location: Location) {
+            val latitude = location.latitude
+            val longitude = location.longitude
+            mapController.setCenter(GeoPoint(latitude, longitude))
+
+            locationManager.removeUpdates(this)
+        }
+
+        override fun onProviderEnabled(provider: String) {}
+
+        override fun onProviderDisabled(provider: String) {}
+
+        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
     }
 
     companion object {
-        private const val REQUEST_LOCATION_PERMISSION = 100
+        private const val PERMISSIONS_REQUEST_LOCATION = 123
     }
 }
-
