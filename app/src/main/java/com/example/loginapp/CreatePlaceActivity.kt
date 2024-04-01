@@ -49,7 +49,7 @@ class CreatePlaceActivity : AppCompatActivity() {
     private val SELECT_LOCATION_REQUEST_CODE = 476
     private lateinit var cathegoryItems: List<String>
 
-    private lateinit var selectedImagePath: String
+    private var selectedImagePath: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,16 +85,17 @@ class CreatePlaceActivity : AppCompatActivity() {
             val cathegory = cathegoryField.editText?.text.toString()
 
             uploadImageToBackendless(selectedImagePath) { loadedImagePath ->
-                val placeData = HashMap<String, Any>()
-                placeData["description"] = description
-                placeData["cathegory"] = cathegory
-                placeData["coordinates"] = location
-                placeData["hashtags"] = tagsList
-                placeData["likeCount"] = 0
-                placeData["authorNickname"] = userNickname
-                placeData["authorId"] = userId
-                placeData["imageUrl"] = loadedImagePath
-                placeData["likedBy"] = "[]"
+                val placeData = hashMapOf(
+                    "description" to description,
+                    "cathegory" to cathegory,
+                    "coordinates" to location,
+                    "hashtags" to tagsList,
+                    "likeCount" to 0,
+                    "authorNickname" to userNickname,
+                    "authorId" to userId,
+                    "imageUrl" to loadedImagePath,
+                    "likedBy" to "[]"
+                )
 
                 savePlaceToBackendless(placeData)
             }
@@ -146,13 +147,11 @@ class CreatePlaceActivity : AppCompatActivity() {
         if (requestCode == GALLERY_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
             val selectedImage: Uri? = data.data
             locationImage.setImageURI(selectedImage)
-            selectedImagePath = getPathFromURI(selectedImage)
-        }
-        else if (requestCode == SELECT_LOCATION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            selectedImagePath = selectedImage?.let { getPathFromURI(it) } ?: ""
+        } else if (requestCode == SELECT_LOCATION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val latitude = data?.getStringExtra("latitude").toString()
             val longitude = data?.getStringExtra("longitude").toString()
             val coordinates = "POINT($longitude $latitude)"
-
             locationTextView.text = coordinates
         }
     }
@@ -260,7 +259,7 @@ class CreatePlaceActivity : AppCompatActivity() {
         startActivityForResult(intent, SELECT_LOCATION_REQUEST_CODE)
     }
 
-    fun getCategories(): List<String> {
+    private fun getCategories(): List<String> {
         return listOf(
             "Парки та сади",
             "Музеї та галереї",

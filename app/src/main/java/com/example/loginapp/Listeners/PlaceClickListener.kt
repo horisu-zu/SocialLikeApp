@@ -1,7 +1,6 @@
 package com.example.loginapp.Listeners
 
 import android.widget.ImageView
-import android.widget.LinearLayout
 import com.example.loginapp.Models.Place
 
 interface PlaceClickListener {
@@ -9,4 +8,5 @@ interface PlaceClickListener {
     fun onBookmarkClick(place: Place)
     fun onCategoryClick(place: Place)
     fun onPopClick(place: Place, imageView: ImageView)
+    fun onMapClick(place: Place)
 }

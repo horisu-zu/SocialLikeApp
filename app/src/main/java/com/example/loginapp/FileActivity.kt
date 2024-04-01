@@ -51,7 +51,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-
 class FileActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
@@ -470,7 +469,7 @@ class FileActivity : AppCompatActivity() {
     }
 
     private fun isImageFile(filePath: String): Boolean {
-        val imageExtensions = arrayOf("jpg", "jpeg", "png", "gif")
+        val imageExtensions = arrayOf("jpg", "jpeg", "png")
         val fileExtension = getFileExtension(filePath)
         return imageExtensions.contains(fileExtension)
     }

@@ -14,7 +14,8 @@
         android:layout_height="wrap_content"
         android:text="Обрати локацію"
         android:backgroundTint="@color/black"
-        android:layout_alignParentBottom="true"
+        android:layout_marginTop="15dp"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>

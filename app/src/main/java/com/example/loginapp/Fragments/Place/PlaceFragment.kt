@@ -3,9 +3,11 @@ package com.example.loginapp.Fragments.Place
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -93,6 +95,8 @@ class PlaceFragment : Fragment(), PlaceClickListener {
             override fun afterTextChanged(s: Editable?) {
             }
         })
+
+        search()
 
         searchButton.setOnClickListener {
             search()
@@ -250,6 +254,15 @@ class PlaceFragment : Fragment(), PlaceClickListener {
         }
 
         popup.show()
+    }
+
+    override fun onMapClick(place: Place) {
+        val latitude = place.coordinates.latitude
+        val longitude = place.coordinates.longitude
+        val uri = Uri.parse("geo:$latitude,$longitude")
+        val mapIntent = Intent(Intent.ACTION_VIEW, uri)
+        mapIntent.setPackage("com.google.android.apps.maps")
+        startActivity(mapIntent)
     }
 
     private fun deleteDialog(objectId: String) {

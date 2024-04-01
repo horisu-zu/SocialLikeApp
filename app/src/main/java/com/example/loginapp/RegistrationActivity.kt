@@ -8,6 +8,8 @@
     import android.net.Uri
     import android.os.Bundle
     import android.util.Log
+    import android.widget.ArrayAdapter
+    import android.widget.AutoCompleteTextView
     import android.widget.EditText
     import android.widget.Toast
     import androidx.annotation.DrawableRes
@@ -18,6 +20,7 @@
     import com.backendless.exceptions.BackendlessFault
     import com.backendless.files.BackendlessFile
     import com.google.android.material.button.MaterialButton
+    import com.google.android.material.textfield.TextInputLayout
     import java.io.File
     import java.io.FileOutputStream
     import java.io.IOException
@@ -28,7 +31,7 @@
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_registration)
 
-            var user = BackendlessUser()
+            val user = BackendlessUser()
 
             val registrationButton: MaterialButton = findViewById(R.id.registrationButton)
             val emailEditText: EditText = findViewById(R.id.editTextRegistrationEmail)
@@ -36,8 +39,18 @@
             val nameEditText: EditText = findViewById(R.id.editTextRegistrationName)
             val nicknameEditText : EditText = findViewById(R.id.editTextNickname)
             val ageEditText: EditText = findViewById(R.id.editTextRegistrationAge)
-            val genderEditText: EditText = findViewById(R.id.editTextRegistrationGender)
-            val countryEditText: EditText = findViewById(R.id.editTextRegistrationCountry)
+            val genderView: TextInputLayout = findViewById<TextInputLayout>(R.id.genderField)
+            val countryView: TextInputLayout =
+                findViewById<TextInputLayout>(R.id.countryField)
+
+            val countryList: List<String> = getCountryList()
+            val genderList: List<Pair<String, String>> = getGenderList()
+
+            val genderAdapter = ArrayAdapter(this, R.layout.list_item, genderList.map { it.first })
+            (genderView.editText as? AutoCompleteTextView)?.setAdapter(genderAdapter)
+
+            val countryAdapter = ArrayAdapter(this, R.layout.list_item, countryList)
+            (countryView.editText as? AutoCompleteTextView)?.setAdapter(countryAdapter)
 
             registrationButton.setOnClickListener {
                 val email = emailEditText.text.toString()
@@ -49,20 +62,27 @@
                     R.drawable.placeholder_image)
                 val bitmap = BitmapFactory.decodeResource(
                     this@RegistrationActivity.resources, R.drawable.placeholder_image)
+                val country = countryView.editText?.text.toString()
+                val nickname = nicknameEditText.text.toString()
 
                 user.email = email
                 user.password = password
                 user.setProperty("name", nameEditText.text.toString())
-                user.setProperty("nickname", nicknameEditText.text.toString())
-                user.setProperty("baseNickname", nicknameEditText.text)
+                user.setProperty("nickname", nickname)
+                user.setProperty("baseNickname", nickname)
                 user.setProperty("age", age)
-                user.setProperty("gender", genderEditText.text.toString())
-                user.setProperty("country", countryEditText.text.toString())
+                user.setProperty("country", country)
                 user.setProperty("subscribersCount", subscribersCount)
                 user.setProperty("subscriptionsCount", subscriptionsCount)
                 user.setProperty("avatarPath", avatarPath)
 
-                if(isValidEmail(email) && isValidPassword(password) && isValidAge(age)) {
+                val selectedGenderUA = genderView.editText?.text.toString()
+                val selectedGenderEN = genderList.find { it.first == selectedGenderUA }?.second ?: ""
+
+                user.setProperty("gender", selectedGenderEN)
+
+                if(isValidEmail(email) && isValidPassword(password) && isValidAge(age)
+                    && isValidCountry(country)) {
                     Backendless.UserService.register(user, object : AsyncCallback<BackendlessUser> {
                         override fun handleResponse(response: BackendlessUser?) {
                             val remotePath : String = "users/${user.getProperty("nickname")}" +
@@ -143,6 +163,10 @@
             return ageInt != null && ageInt >= 5
         }
 
+        private fun isValidCountry(country: String?) : Boolean {
+            return country != null
+        }
+
         private fun getDrawableImagePath(context: Context, @DrawableRes drawableResId: Int):
                 String? {
             val resources = context.resources
@@ -201,6 +225,51 @@
                 }
             )
         }
+
+        fun getGenderList(): List<Pair<String, String>> {
+            return listOf(
+                "Чоловік" to "Male",
+                "Жінка" to "Female",
+                "Інше" to "Other"
+            )
+        }
+
+        private fun getCountryList(): List<String> {
+            return listOf(
+                "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda",
+                "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain",
+                "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
+                "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria",
+                "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada",
+                "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo",
+                "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czechia", "Denmark", "Djibouti",
+                "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea",
+                "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon",
+                "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea",
+                "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India",
+                "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan",
+                "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia",
+                "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg",
+                "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands",
+                "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia",
+                "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal",
+                "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea",
+                "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama",
+                "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal",
+                "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia",
+                "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe",
+                "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore",
+                "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea",
+                "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland",
+                "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo",
+                "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda",
+                "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay",
+                "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia",
+                "Zimbabwe"
+            )
+        }
+
+
 
         /*private fun setImageToFolder(user: BackendlessUser) {
             val placeholderImageBitmap: Bitmap = BitmapFactory.decodeResource(resources,

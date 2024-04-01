@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/placeItemLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -14,29 +15,97 @@
         android:layout_marginBottom="8dp"
         android:alpha="0.4"/>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/avatarCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="30dp">
+
+            <ImageView
+                android:id="@+id/avatarImageView"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:src="@drawable/placeholder_image"/>
+
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:id="@+id/nameLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="15dp">
+
+            <TextView
+                android:id="@+id/authorName"
+                android:text="somename"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/authorNickname"
+                android:text="\@someNickname"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:alpha="0.6"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/dateView"
+            android:text="../../.."
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:alpha="0.6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/mapCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="10dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:src="@drawable/ic_map"
+                android:layout_height="wrap_content"
+                android:padding="5dp"/>
+
+        </androidx.cardview.widget.CardView>
 
         <ImageView
             android:id="@+id/locationImage"
-            android:layout_width="300dp"
-            android:layout_height="250dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="8dp"
-            android:scaleType="centerCrop" />
+            android:layout_width="275dp"
+            android:layout_height="225dp"
+            android:layout_centerHorizontal="true" />
 
         <ImageView
             android:id="@+id/imagePop"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:src="@drawable/ic_pop"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="5dp"/>
+            android:src="@drawable/ic_pop" />
 
     </RelativeLayout>
-
 
     <TextView
         android:id="@+id/descriptionView"
@@ -46,7 +115,8 @@
         android:textSize="16sp"
         android:textStyle="bold"
         android:textColor="@color/white"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="5dp"/>
 
     <TextView
         android:id="@+id/cathegoryView"
@@ -57,44 +127,13 @@
         android:textColor="@color/white"
         android:layout_marginBottom="8dp"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/usernameView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="some user..."
-            android:textSize="13sp"
-            android:textColor="@color/white"
-            android:alpha="0.8"/>
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-
-        <TextView
-            android:id="@+id/creationDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="some time..."
-            android:textSize="13sp"
-            android:textColor="@color/white"
-            android:alpha="0.8"/>
-
-    </LinearLayout>
-
     <TextView
         android:id="@+id/metadataView"
         android:text="some tags..."
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="13sp"
-        android:textColor="@color/white"
-        android:layout_marginTop="10dp"/>
+        android:textColor="@color/white"/>
 
     <LinearLayout
         android:layout_width="match_parent"

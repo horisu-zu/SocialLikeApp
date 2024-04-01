@@ -1,21 +1,20 @@
 package com.example.loginapp
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.Manifest
 import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
 import com.backendless.Backendless
 import com.backendless.BackendlessUser
 import com.backendless.async.callback.AsyncCallback
@@ -25,12 +24,11 @@ import com.backendless.persistence.Point
 import com.example.loginapp.Fragments.Place.EmptyPlaceFragment
 import com.example.loginapp.Fragments.Place.PlaceFragment
 import com.example.loginapp.Models.Place
+import com.google.android.gms.location.*
 import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import com.google.android.gms.location.*
-import com.google.android.gms.location.LocationResult
 
 class ProfileActivity : AppCompatActivity() {
     private lateinit var user: BackendlessUser
@@ -54,10 +52,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var placeIndicator: View
 
     private val LOCATION_REQUEST_CODE = 1869
-    private lateinit var locationCallback: LocationCallback
 
-    private lateinit var placeFragment: PlaceFragment
-    private var currentFragment: Fragment? = null
     private val placeList: MutableList<Place> = ArrayList()
 
     @SuppressLint("MissingInflatedId")
@@ -249,6 +244,7 @@ class ProfileActivity : AppCompatActivity() {
                             imageUrl = placeData["imageUrl"] as? String?,
                             likeCount = placeData["likeCount"] as? Int ?: 0,
                             authorNickname = placeData["authorNickname"] as? String ?: "",
+                            authorId = placeData["authorId"] as? String ?: "",
                             likedBy = likedByList
                         )
                         Log.e("LIKED BY", likedByList.toString())
