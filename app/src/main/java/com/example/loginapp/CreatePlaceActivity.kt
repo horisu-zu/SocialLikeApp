@@ -94,7 +94,9 @@ class CreatePlaceActivity : AppCompatActivity() {
                     "authorNickname" to userNickname,
                     "authorId" to userId,
                     "imageUrl" to loadedImagePath,
-                    "likedBy" to "[]"
+                    "likedBy" to "[]",
+                    "bookmarkedBy" to "[]",
+                    "bookmarkCount" to 0
                 )
 
                 savePlaceToBackendless(placeData)

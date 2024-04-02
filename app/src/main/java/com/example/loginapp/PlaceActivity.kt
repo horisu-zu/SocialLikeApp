@@ -1,20 +1,18 @@
     package com.example.loginapp
 
     import android.content.Intent
-    import androidx.appcompat.app.AppCompatActivity
     import android.os.Bundle
     import android.util.Log
     import android.widget.Button
+    import androidx.appcompat.app.AppCompatActivity
     import com.backendless.Backendless
     import com.backendless.async.callback.AsyncCallback
     import com.backendless.exceptions.BackendlessFault
-    import com.backendless.persistence.DataQueryBuilder
     import com.backendless.persistence.Point
     import com.example.loginapp.Fragments.Place.EmptyPlaceFragment
     import com.example.loginapp.Fragments.Place.PlaceFragment
     import com.example.loginapp.Models.Place
     import java.text.SimpleDateFormat
-    import java.util.Arrays
     import java.util.Date
     import java.util.Locale
 
@@ -46,6 +44,9 @@
                             val likedByArray = placeData["likedBy"] as? Array<String>
                             val likedByList = likedByArray?.toList() ?: emptyList()
 
+                            val bookmarkedByArray = placeData["bookmarkedBy"] as? Array<String>
+                            val bookmarkedByList = bookmarkedByArray?.toList() ?: emptyList()
+
                             val place = Place(
                                 objectId = placeData["objectId"] as? String ?: "",
                                 description = placeData["description"] as? String ?: "",
@@ -57,7 +58,9 @@
                                 likeCount = placeData["likeCount"] as? Int ?: 0,
                                 authorNickname = placeData["authorNickname"] as? String ?: "",
                                 authorId = placeData["authorId"] as? String ?: "",
-                                likedBy = likedByList
+                                likedBy = likedByList,
+                                bookmarkedBy = bookmarkedByList,
+                                bookmarkCount = placeData["bookmarkCount"] as? Int ?: 0
                             )
                             Log.e("LIKED BY", likedByList.toString())
                             placeList.add(place)

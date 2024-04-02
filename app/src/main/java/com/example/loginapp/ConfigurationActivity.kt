@@ -2,9 +2,7 @@ package com.example.loginapp
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.text.Editable
@@ -15,11 +13,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.backendless.Backendless
 import com.backendless.BackendlessUser
 import com.backendless.async.callback.AsyncCallback
-import com.backendless.async.callback.UploadCallback
 import com.backendless.exceptions.BackendlessFault
 import com.backendless.files.BackendlessFile
 import com.backendless.files.FileInfo
@@ -85,8 +83,6 @@ class ConfigurationActivity : AppCompatActivity() {
         passwordCard.setOnClickListener {
             val intent = Intent(this@ConfigurationActivity,
                 PasswordConfigurationActivity::class.java)
-            intent.putExtra("user", user)
-
             startActivity(intent)
         }
 
@@ -94,7 +90,11 @@ class ConfigurationActivity : AppCompatActivity() {
             val nickname = previewNickname.text.toString().substringAfterLast("@")
             user.setProperty("name", previewName.text.toString())
             user.setProperty("nickname", nickname)
-            user.setProperty("avatarPath", avatarPath)
+            if (::avatarPath.isInitialized) {
+                user.setProperty("avatarPath", avatarPath)
+            } else {
+                Toast.makeText(this, "No new avatar selected", Toast.LENGTH_SHORT).show()
+            }
 
             Backendless.UserService.update(user, object: AsyncCallback<BackendlessUser> {
                 override fun handleResponse(response: BackendlessUser?) {

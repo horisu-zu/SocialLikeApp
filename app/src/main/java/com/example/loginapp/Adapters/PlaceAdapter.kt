@@ -17,28 +17,29 @@ import com.bumptech.glide.Glide
 import com.example.loginapp.Listeners.PlaceClickListener
 import com.example.loginapp.Models.Place
 import com.example.loginapp.R
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PlaceAdapter(
     private val context: Context,
     private var dataList: List<Place>,
     private val placeClickListener: PlaceClickListener,
-    private val currentUser: String) :
-        RecyclerView.Adapter<PlaceAdapter.ViewHolder>() {
+    private val currentUser: String
+) : RecyclerView.Adapter<PlaceAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.place_item, parent,
-            false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.place_item, parent, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val data = dataList[position]
+        val isDateSelected = false;
 
         with(holder) {
             descriptionView.text = data.description
             cathegoryView.text = data.cathegory
             metadataView.text = data.hashtags
-            creationDate.text = data.created
             likeCount.text = data.likeCount.toString()
 
             if (data.authorId.isNullOrEmpty()) {
@@ -63,15 +64,21 @@ class PlaceAdapter(
                     }
 
                     override fun handleFault(fault: BackendlessFault?) {
-                    Log.e("PlaceAdapter", "Не вдалося отримати дані користувача: " +
-                            fault?.message)
-                }
-            })
+                        Log.e("PlaceAdapter", "Не вдалося отримати дані користувача: " +
+                                fault?.message)
+                    }
+                })
 
             val isLikedBy = data.likedBy.contains(currentUser)
             likeImage.setImageResource(
                 if (isLikedBy) R.drawable.ic_like_pressed
                 else R.drawable.ic_like
+            )
+
+            val isBookmarkedBy = data.bookmarkedBy.contains(currentUser)
+            bookmarkImage.setImageResource(
+                if (isBookmarkedBy) R.drawable.ic_bookmarked
+                else R.drawable.ic_bookmark_empty
             )
 
             likeImage.setOnClickListener {
@@ -93,6 +100,8 @@ class PlaceAdapter(
             mapCard.setOnClickListener {
                 placeClickListener.onMapClick(data)
             }
+
+            setInitialCreationDate(data.created)
 
             if (data.imageUrl.isNullOrEmpty()) {
                 locationImage.visibility = View.GONE
@@ -121,8 +130,31 @@ class PlaceAdapter(
         notifyDataSetChanged()
     }
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        //val layout: LinearLayout = itemView.findViewById(R.id.placeItemLayout)
+    private fun getTime(creationTimeString: String): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
+            Locale("uk", "UA"))
+        val creationTime: Date = dateFormat.parse(creationTimeString) ?: Date()
+
+        val currentTime = System.currentTimeMillis()
+
+        val elapsedTimeMillis = currentTime - creationTime.time
+        val elapsedTimeSeconds = elapsedTimeMillis / 1000
+        val elapsedTimeMinutes = elapsedTimeSeconds / 60
+        val elapsedTimeHours = elapsedTimeMinutes / 60
+
+        return when {
+            elapsedTimeHours >= 24 -> {
+                val dateFormat = SimpleDateFormat("dd MMM", Locale("uk", "UA"))
+                dateFormat.format(creationTime)
+            }
+            elapsedTimeHours >= 1 -> "$elapsedTimeHours год"
+            elapsedTimeMinutes >= 1 -> "$elapsedTimeMinutes хв"
+            else -> "$elapsedTimeSeconds с"
+        }
+    }
+
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private var isDateSelected = false
 
         val descriptionView: TextView = itemView.findViewById(R.id.descriptionView)
         val avatarImageView: ImageView = itemView.findViewById(R.id.avatarImageView)
@@ -137,5 +169,28 @@ class PlaceAdapter(
         val locationImage: ImageView = itemView.findViewById(R.id.locationImage)
         val imagePop: ImageView = itemView.findViewById(R.id.imagePop)
         val mapCard: CardView = itemView.findViewById(R.id.mapCard)
+
+        init {
+            creationDate.setOnClickListener {
+                isDateSelected = !isDateSelected
+                updateDateView()
+            }
+        }
+
+        fun setInitialCreationDate(initialValue: String) {
+            val formattedElapsedTime = getTime(initialValue)
+            creationDate.text = formattedElapsedTime
+        }
+
+        private fun updateDateView() {
+            val position = adapterPosition
+            val data = dataList[position]
+
+            if (isDateSelected) {
+                creationDate.text = data.created
+            } else {
+                setInitialCreationDate(data.created)
+            }
+        }
     }
 }

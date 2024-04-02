@@ -13,5 +13,7 @@ class Place (
     var likeCount: Int = 0,
     var authorNickname: String = "",
     var authorId: String = "",
-    var likedBy: List<String> = listOf()
+    var likedBy: List<String> = listOf(),
+    var bookmarkedBy: List<String> = listOf(),
+    var bookmarkCount: Int = 0
 )

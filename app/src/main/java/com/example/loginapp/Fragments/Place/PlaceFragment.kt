@@ -53,10 +53,12 @@ class PlaceFragment : Fragment(), PlaceClickListener {
     private var selectedSearchItem: String = ""
     private val placeList: MutableList<Place> = ArrayList()
     private lateinit var originalCathegories: MutableList<String>
-    private val LIKE_PREFERENCES = "like_preferences"
     private var isSearchPressed: Boolean = false
     private lateinit var searchItems: List<String>
     private val currentUserId: String = Backendless.UserService.CurrentUser().userId
+
+    private val LIKE_PREFERENCES = "like_preferences"
+    private val BOOKMARK_PREFERENCES = "bookmark_preferences"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -107,7 +109,8 @@ class PlaceFragment : Fragment(), PlaceClickListener {
         placeRecyclerView.layoutManager = LinearLayoutManager(context)
 
         for (place in placeList) {
-            loadLikeState(place.objectId)
+            loadState(LIKE_PREFERENCES, place.objectId)
+            loadState(BOOKMARK_PREFERENCES, place.objectId)
         }
 
         return view
@@ -208,12 +211,35 @@ class PlaceFragment : Fragment(), PlaceClickListener {
 
         placeAdapter.notifyItemChanged(index)
 
-        updateBackendlessLike(selectedPlace.objectId, userId, !isLikedByCurrentUser)
+        updateBackendless(selectedPlace.objectId, userId, "like" , !isLikedByCurrentUser)
 
-        saveLikeState(selectedPlace.objectId, isLikedByCurrentUser)
+        saveState(LIKE_PREFERENCES, selectedPlace.objectId, isLikedByCurrentUser)
     }
 
     override fun onBookmarkClick(place: Place) {
+        val index = placeList.indexOf(place)
+        Log.e("INDEX", index.toString())
+        val selectedPlace = placeList[index]
+        Log.e("SELECTED ID", selectedPlace.objectId)
+        val userId = Backendless.UserService.CurrentUser().objectId
+
+        val isBookmarkedByCurrentUser: Boolean = selectedPlace.bookmarkedBy.contains(userId)
+        Log.e("LIKED BY", selectedPlace.bookmarkedBy.toString())
+        Log.e("ISLIKED", isBookmarkedByCurrentUser.toString())
+
+        if (isBookmarkedByCurrentUser) {
+            selectedPlace.bookmarkCount--
+            selectedPlace.bookmarkedBy = selectedPlace.bookmarkedBy.filter { it != userId }
+        } else {
+            selectedPlace.bookmarkCount++
+            selectedPlace.bookmarkedBy = selectedPlace.bookmarkedBy + userId
+        }
+
+        placeAdapter.notifyItemChanged(index)
+
+        updateBackendless(selectedPlace.objectId, userId, "bookmark" , !isBookmarkedByCurrentUser)
+
+        saveState(BOOKMARK_PREFERENCES, selectedPlace.objectId, isBookmarkedByCurrentUser)
     }
 
     override fun onCategoryClick(place: Place) {
@@ -293,21 +319,21 @@ class PlaceFragment : Fragment(), PlaceClickListener {
         })
     }
 
-    private fun saveLikeState(placeId: String, isLiked: Boolean) {
-        val sharedPreferences = requireContext().getSharedPreferences(LIKE_PREFERENCES,
+    private fun saveState(preferences: String, placeId: String, isLiked: Boolean) {
+        val sharedPreferences = requireContext().getSharedPreferences(preferences,
             Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putBoolean(placeId, isLiked)
         editor.apply()
     }
 
-    private fun loadLikeState(placeId: String): Boolean {
-        val sharedPreferences = requireContext().getSharedPreferences(LIKE_PREFERENCES,
+    private fun loadState(preferences: String, placeId: String): Boolean {
+        val sharedPreferences = requireContext().getSharedPreferences(preferences,
             Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean(placeId, false)
     }
 
-    private fun updateBackendlessLike(objectId: String, userId: String, update: Boolean) {
+    private fun updateBackendless(objectId: String, userId: String, updateType: String, update: Boolean) {
         Backendless.Data.of("Place").findById(objectId,
             object : AsyncCallback<Map<Any?, Any?>> {
                 override fun handleResponse(response: Map<Any?, Any?>?) {
@@ -318,16 +344,27 @@ class PlaceFragment : Fragment(), PlaceClickListener {
                         val likedByArray = placeData["likedBy"] as? Array<String>
                         val likedByList = likedByArray?.toList() ?: emptyList()
 
-                        val updatedLikedByList = if (update) {
-                            if (userId !in likedByList) likedByList + userId
-                            else likedByList
-                        } else {
-                            likedByList - userId
-                        }
-                        changes["likedBy"] = updatedLikedByList
+                        val bookmarkedByArray = placeData["bookmarkedBy"] as? Array<String>
+                        val bookmarkedByList = bookmarkedByArray?.toList() ?: emptyList()
 
-                        val itemCount = updatedLikedByList.size
-                        changes["likeCount"] = itemCount
+                        val updatedList = if (updateType == "like") likedByList else bookmarkedByList
+
+                        val updatedListWithUser = if (update) {
+                            if (userId !in updatedList) updatedList + userId
+                            else updatedList
+                        } else {
+                            updatedList - userId
+                        }
+
+                        val itemCount = updatedListWithUser.size
+
+                        if (updateType == "like") {
+                            changes["likedBy"] = updatedListWithUser
+                            changes["likeCount"] = itemCount
+                        } else if (updateType == "bookmark") {
+                            changes["bookmarkedBy"] = updatedListWithUser
+                            changes["bookmarkCount"] = itemCount
+                        }
 
                         Backendless.Data.of("Place").update(whereClause, changes,
                             object : AsyncCallback<Int> {
@@ -336,8 +373,13 @@ class PlaceFragment : Fragment(), PlaceClickListener {
                                         it.objectId == objectId
                                     }
                                     if (updatedPlaceIndex != -1) {
-                                        placeList[updatedPlaceIndex].likeCount = itemCount
-                                        placeList[updatedPlaceIndex].likedBy = updatedLikedByList
+                                        if (updateType == "like") {
+                                            placeList[updatedPlaceIndex].likeCount = itemCount
+                                            placeList[updatedPlaceIndex].likedBy = updatedListWithUser
+                                        } else if (updateType == "bookmark") {
+                                            placeList[updatedPlaceIndex].bookmarkCount = itemCount
+                                            placeList[updatedPlaceIndex].bookmarkedBy = updatedListWithUser
+                                        }
                                         placeAdapter.notifyItemChanged(updatedPlaceIndex)
                                     }
                                 }
@@ -350,9 +392,11 @@ class PlaceFragment : Fragment(), PlaceClickListener {
                 }
 
                 override fun handleFault(fault: BackendlessFault?) {
+                    Log.e("ERROR", "Error: $fault")
                 }
             })
     }
+
 
     private fun getSearchTypes(): List<String> {
         return listOf(
