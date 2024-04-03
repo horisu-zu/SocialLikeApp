@@ -36,7 +36,7 @@
 
         private fun getDataFromServer() {
             Backendless.Data.of("Place").find(object :
-                    AsyncCallback<List<MutableMap<Any?, Any?>>> {
+                AsyncCallback<List<MutableMap<Any?, Any?>>> {
                 override fun handleResponse(response: List<MutableMap<Any?, Any?>>?) {
                     response?.let { places ->
                         placeList.clear()

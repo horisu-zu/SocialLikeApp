@@ -127,11 +127,12 @@
         android:textColor="@color/white"
         android:layout_marginBottom="8dp"/>
 
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/metadataView"
         android:text="some tags..."
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:textSize="13sp"
         android:textColor="@color/white"/>
 

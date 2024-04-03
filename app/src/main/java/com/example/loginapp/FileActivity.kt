@@ -11,15 +11,12 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.view.View
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.backendless.Backendless
@@ -29,13 +26,14 @@ import com.backendless.files.BackendlessFile
 import com.backendless.files.FileInfo
 import com.backendless.persistence.DataQueryBuilder
 import com.example.loginapp.Adapters.FileAdapter
+import com.example.loginapp.Fragments.File.AudioFileFragment
+import com.example.loginapp.Fragments.File.ImageFileFragment
+import com.example.loginapp.Fragments.File.TextFileFragment
 import com.example.loginapp.Listeners.FolderFileClickListener
 import com.example.loginapp.Models.Defaults
 import com.example.loginapp.Models.FolderFile
 import com.example.loginapp.Models.User
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.squareup.picasso.Callback
-import com.squareup.picasso.Picasso
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -47,6 +45,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -57,7 +56,6 @@ class FileActivity : AppCompatActivity() {
     private lateinit var fileAdapter: FileAdapter
     private lateinit var addButton: FloatingActionButton
     private lateinit var cameraButton: FloatingActionButton
-    private lateinit var imageView: ImageView
     private val PICK_FILE_REQUEST = 1648
     private val REQUEST_IMAGE_CAPTURE = 1914
     //private var filePath: String = ""
@@ -66,6 +64,7 @@ class FileActivity : AppCompatActivity() {
     private val BASE_URL = "https://backendlessappcontent.com/${Defaults.applicationId}" +
             "/${Defaults.apiKey}/files/"
 
+    @SuppressLint("QueryPermissionsNeeded")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_file)
@@ -73,7 +72,6 @@ class FileActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.fileRecycler)
         addButton = findViewById(R.id.addButton)
         cameraButton = findViewById(R.id.cameraButton)
-        imageView = findViewById<ImageView>(R.id.imageView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         fileAdapter = FileAdapter(emptyList(), fileClickListener)
         recyclerView.adapter = fileAdapter
@@ -89,12 +87,6 @@ class FileActivity : AppCompatActivity() {
 
         addButton.setOnClickListener {
             openFilePicker()
-        }
-
-        imageView.setOnClickListener {
-            if(imageView.isVisible) {
-                imageView.visibility = View.GONE
-            }
         }
 
         cameraButton.setOnClickListener {
@@ -452,8 +444,18 @@ class FileActivity : AppCompatActivity() {
                 onSuccess = { fileContent ->
                     Log.i(TAG, "File content: $fileContent")
                     if (isImageFile(fileContent)) {
-                        displayImage(Uri.parse(fileContent))
-                    } else {
+                        val fragment = ImageFileFragment()
+                        val bundle = Bundle()
+                        bundle.putString("imageUri", fileContent)
+                        fragment.arguments = bundle
+                        fragment.show(supportFragmentManager, "imageDialog")
+                    }
+                    /*else if(getFileType(fileContent) == "Document") {
+                        openTextFile(fileContent)
+                    }*/
+                    else if(getFileType(fileContent) == "Audio") {
+                        openAudioFile(Uri.parse(fileContent))
+                    }else {
                         openFileExternal(Uri.parse(fileContent))
                     }
                 },
@@ -478,7 +480,54 @@ class FileActivity : AppCompatActivity() {
         return filePath.substring(filePath.lastIndexOf(".") + 1)
     }
 
-    private fun displayImage(imageUri: Uri) {
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun openTextFile(pdfUrl: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val inputStream = URL(pdfUrl).openStream()
+                val file = File.createTempFile("temp", ".pdf")
+                file.outputStream().use { output ->
+                    inputStream.copyTo(output)
+                }
+                withContext(Dispatchers.Main) {
+                    val fragmentManager = supportFragmentManager
+                    val fragmentTransaction = fragmentManager.beginTransaction()
+
+                    val fragment = TextFileFragment()
+                    val bundle = Bundle().apply {
+                        putString("pdfUrl", file.absolutePath)
+                    }
+                    fragment.arguments = bundle
+
+                    fragmentTransaction.addToBackStack(null)
+                    fragment.show(fragmentTransaction, "pdfFileFragment")
+                }
+            } catch (e: Exception) {
+                Log.e("OpenPDFFile", "Error loading PDF file: ${e.message}")
+            }
+        }
+    }
+
+    private fun openAudioFile(audioUri: Uri) {
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+
+        val audioTitle = audioUri.toString().substringAfterLast("/")
+
+        val fragment = AudioFileFragment().apply {
+            arguments = Bundle().apply {
+                putString("audioUri", audioUri.toString())
+                putString("audioTitle", audioTitle)
+            }
+        }
+        fragmentTransaction.addToBackStack(null)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    /*private fun displayImage(imageUri: Uri) {
         Picasso.get().load(imageUri)
             .into(imageView, object : Callback {
                 override fun onSuccess() {
@@ -489,7 +538,7 @@ class FileActivity : AppCompatActivity() {
                     Log.e(TAG, "Error loading image: $e")
                 }
             })
-    }
+    }*/
 
     private fun openFileExternal(fileUri: Uri) {
         val intent = Intent(Intent.ACTION_VIEW)

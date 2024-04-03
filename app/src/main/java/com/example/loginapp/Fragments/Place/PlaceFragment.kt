@@ -31,6 +31,7 @@ import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
 import com.example.loginapp.Adapters.PlaceAdapter
 import com.example.loginapp.Listeners.PlaceClickListener
+import com.example.loginapp.Listeners.TagClickListener
 import com.example.loginapp.Models.Place
 import com.example.loginapp.R
 import com.google.android.material.textfield.TextInputEditText
@@ -42,7 +43,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class PlaceFragment : Fragment(), PlaceClickListener {
+class PlaceFragment : Fragment(), PlaceClickListener, TagClickListener {
     private lateinit var placeSearch: TextInputEditText
     private lateinit var searchButton: ImageButton
     private lateinit var searchLayout: LinearLayout
@@ -104,7 +105,8 @@ class PlaceFragment : Fragment(), PlaceClickListener {
             search()
         }
 
-        placeAdapter = PlaceAdapter(requireContext(), placeList, this, currentUserId)
+        placeAdapter = PlaceAdapter(requireContext(), placeList, this, currentUserId,
+            this)
         placeRecyclerView.adapter = placeAdapter
         placeRecyclerView.layoutManager = LinearLayoutManager(context)
 
@@ -291,6 +293,12 @@ class PlaceFragment : Fragment(), PlaceClickListener {
         startActivity(mapIntent)
     }
 
+    override fun onTagClick(tag: String) {
+        selectedSearchItem = "Тег"
+        placeSearch.setText(tag)
+        filterPlaces(selectedSearchItem)
+    }
+
     private fun deleteDialog(objectId: String) {
         val alertDialogBuilder = AlertDialog.Builder(requireContext())
         alertDialogBuilder.setTitle("Видалення")
@@ -396,7 +404,6 @@ class PlaceFragment : Fragment(), PlaceClickListener {
                 }
             })
     }
-
 
     private fun getSearchTypes(): List<String> {
         return listOf(

@@ -9,12 +9,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.backendless.Backendless
 import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
 import com.bumptech.glide.Glide
 import com.example.loginapp.Listeners.PlaceClickListener
+import com.example.loginapp.Listeners.TagClickListener
 import com.example.loginapp.Models.Place
 import com.example.loginapp.R
 import java.text.SimpleDateFormat
@@ -24,7 +26,8 @@ class PlaceAdapter(
     private val context: Context,
     private var dataList: List<Place>,
     private val placeClickListener: PlaceClickListener,
-    private val currentUser: String
+    private val currentUser: String,
+    private val tagClickListener: TagClickListener
 ) : RecyclerView.Adapter<PlaceAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -34,17 +37,24 @@ class PlaceAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val data = dataList[position]
-        val isDateSelected = false;
 
         with(holder) {
             descriptionView.text = data.description
             cathegoryView.text = data.cathegory
-            metadataView.text = data.hashtags
             likeCount.text = data.likeCount.toString()
 
             if (data.authorId.isNullOrEmpty()) {
                 Log.e("PlaceAdapter", "AuthorID is null/empty")
                 return
+            }
+
+            val tagsList: List<String> = data.hashtags.split(" ")
+
+            val hashtagAdapter = TagAdapter(context, tagsList, tagClickListener)
+            metadataRecyclerView.apply {
+                layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL,
+                    false)
+                adapter = hashtagAdapter
             }
 
             Backendless.Data.of("Users").findById(data.authorId,
@@ -159,7 +169,7 @@ class PlaceAdapter(
         val descriptionView: TextView = itemView.findViewById(R.id.descriptionView)
         val avatarImageView: ImageView = itemView.findViewById(R.id.avatarImageView)
         val cathegoryView: TextView = itemView.findViewById(R.id.cathegoryView)
-        val metadataView: TextView = itemView.findViewById(R.id.metadataView)
+        val metadataRecyclerView: RecyclerView = itemView.findViewById(R.id.metadataView)
         val usernameView: TextView = itemView.findViewById(R.id.authorName)
         val nicknameView: TextView = itemView.findViewById(R.id.authorNickname)
         val creationDate: TextView = itemView.findViewById(R.id.dateView)
