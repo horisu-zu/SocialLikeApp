@@ -9,4 +9,5 @@ interface PlaceClickListener {
     fun onCategoryClick(place: Place)
     fun onPopClick(place: Place, imageView: ImageView)
     fun onMapClick(place: Place)
+    fun onUserClick(place: Place)
 }

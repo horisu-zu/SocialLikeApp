@@ -6,9 +6,9 @@
     tools:context=".Fragments.File.TextFileFragment"
     android:background="@android:color/black">
 
-    <com.pdfview.PDFView
+    <!--<com.github.barteksc.pdfviewer.PDFView
         android:id="@+id/pdfView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"/>-->
 
 </FrameLayout>

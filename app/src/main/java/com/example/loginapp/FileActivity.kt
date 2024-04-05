@@ -29,6 +29,7 @@ import com.example.loginapp.Adapters.FileAdapter
 import com.example.loginapp.Fragments.File.AudioFileFragment
 import com.example.loginapp.Fragments.File.ImageFileFragment
 import com.example.loginapp.Fragments.File.TextFileFragment
+import com.example.loginapp.Fragments.File.VideoFileFragment
 import com.example.loginapp.Listeners.FolderFileClickListener
 import com.example.loginapp.Models.Defaults
 import com.example.loginapp.Models.FolderFile
@@ -45,7 +46,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -455,6 +455,9 @@ class FileActivity : AppCompatActivity() {
                     }*/
                     else if(getFileType(fileContent) == "Audio") {
                         openAudioFile(Uri.parse(fileContent))
+                    }
+                    else if(getFileType(fileContent) == "Video") {
+                        openVideoFile(Uri.parse(fileContent))
                     }else {
                         openFileExternal(Uri.parse(fileContent))
                     }
@@ -471,7 +474,7 @@ class FileActivity : AppCompatActivity() {
     }
 
     private fun isImageFile(filePath: String): Boolean {
-        val imageExtensions = arrayOf("jpg", "jpeg", "png")
+        val imageExtensions = arrayOf("jpg", "jpeg", "png", "gif")
         val fileExtension = getFileExtension(filePath)
         return imageExtensions.contains(fileExtension)
     }
@@ -480,32 +483,12 @@ class FileActivity : AppCompatActivity() {
         return filePath.substring(filePath.lastIndexOf(".") + 1)
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     private fun openTextFile(pdfUrl: String) {
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val inputStream = URL(pdfUrl).openStream()
-                val file = File.createTempFile("temp", ".pdf")
-                file.outputStream().use { output ->
-                    inputStream.copyTo(output)
-                }
-                withContext(Dispatchers.Main) {
-                    val fragmentManager = supportFragmentManager
-                    val fragmentTransaction = fragmentManager.beginTransaction()
-
-                    val fragment = TextFileFragment()
-                    val bundle = Bundle().apply {
-                        putString("pdfUrl", file.absolutePath)
-                    }
-                    fragment.arguments = bundle
-
-                    fragmentTransaction.addToBackStack(null)
-                    fragment.show(fragmentTransaction, "pdfFileFragment")
-                }
-            } catch (e: Exception) {
-                Log.e("OpenPDFFile", "Error loading PDF file: ${e.message}")
-            }
-        }
+        val fragment = TextFileFragment()
+        val bundle = Bundle()
+        bundle.putString("pdfUrl", pdfUrl)
+        fragment.arguments = bundle
+        fragment.show(supportFragmentManager, "pdfDialog")
     }
 
     private fun openAudioFile(audioUri: Uri) {
@@ -525,6 +508,14 @@ class FileActivity : AppCompatActivity() {
             .replace(R.id.fragment_container, fragment)
             .addToBackStack(null)
             .commit()
+    }
+
+    private fun openVideoFile(videoUri: Uri) {
+        val fragment = VideoFileFragment()
+        val bundle = Bundle()
+        bundle.putString("videoUri", videoUri.toString())
+        fragment.arguments = bundle
+        fragment.show(supportFragmentManager, "videoDialog")
     }
 
     /*private fun displayImage(imageUri: Uri) {

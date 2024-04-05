@@ -33,6 +33,7 @@ import com.example.loginapp.Adapters.PlaceAdapter
 import com.example.loginapp.Listeners.PlaceClickListener
 import com.example.loginapp.Listeners.TagClickListener
 import com.example.loginapp.Models.Place
+import com.example.loginapp.ProfileActivity
 import com.example.loginapp.R
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -291,6 +292,12 @@ class PlaceFragment : Fragment(), PlaceClickListener, TagClickListener {
         val mapIntent = Intent(Intent.ACTION_VIEW, uri)
         mapIntent.setPackage("com.google.android.apps.maps")
         startActivity(mapIntent)
+    }
+
+    override fun onUserClick(place: Place) {
+        val intent = Intent(requireContext(), ProfileActivity::class.java)
+        intent.putExtra("userId", place.authorId)
+        startActivity(intent)
     }
 
     override fun onTagClick(tag: String) {

@@ -51,6 +51,9 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var likeIndicator: View
     private lateinit var placeIndicator: View
 
+    private var userId: String? = null
+    private var isCurrentUser = false
+
     private val LOCATION_REQUEST_CODE = 1869
 
     private val placeList: MutableList<Place> = ArrayList()
@@ -59,9 +62,8 @@ class ProfileActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
-        user = Backendless.UserService.CurrentUser() ?: BackendlessUser()
 
-        getUserPlaceFromServer()
+        userId = intent.getStringExtra("userId")
 
         profileName = findViewById(R.id.nameTextView)
         profileNickname = findViewById(R.id.nicknameTextView)
@@ -73,6 +75,8 @@ class ProfileActivity : AppCompatActivity() {
 
         backCard = findViewById(R.id.backCard)
         configurationCard = findViewById(R.id.configurationCard)
+        configurationCard.visibility = View.GONE
+
         postItem = findViewById(R.id.postNavigationItem)
         likeItem = findViewById(R.id.likeNavigationItem)
         placeItem = findViewById(R.id.placeNavigationItem)
@@ -83,7 +87,7 @@ class ProfileActivity : AppCompatActivity() {
 
         selectNavigationItem(R.id.postNavigationItem)
 
-        getUserInfo()
+        getUser()
 
         postItem.setOnClickListener {
             selectNavigationItem(R.id.postNavigationItem)
@@ -106,14 +110,45 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            getCurrentLocation()
-        } else {
-            ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_REQUEST_CODE)
+        if(isCurrentUser) {
+            if (ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation()
+            } else {
+                ActivityCompat.requestPermissions(this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_REQUEST_CODE)
+            }
         }
     }
+
+    private fun getUser() {
+        if(userId != null) {
+            Log.e("USERID", userId!!)
+            Backendless.UserService.findById(userId, object : AsyncCallback<BackendlessUser> {
+                override fun handleResponse(foundUser: BackendlessUser) {
+                    user = foundUser
+                    isCurrentUser = false
+
+                    getUserPlaceFromServer()
+                    getUserInfo()
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    Log.e("BackendlessError", "Failed to find user: ${fault.message}")
+                }
+            })
+        } else {
+            Log.e("USER", "Current User")
+            user = Backendless.UserService.CurrentUser()
+            isCurrentUser = true
+
+            configurationCard.visibility = View.VISIBLE
+
+            getUserPlaceFromServer()
+            getUserInfo()
+        }
+    }
+
     @SuppressLint("SetTextI18n")
     private fun getUserInfo() {
         val createdDate = user.getProperty("created") as Date
@@ -220,7 +255,7 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun getUserPlaceFromServer() {
-        val nickname = Backendless.UserService.CurrentUser().getProperty("nickname")
+        val nickname = user.getProperty("nickname")
 
         val whereClause = "authorNickname = '$nickname'"
         val queryBuilder = DataQueryBuilder.create().setWhereClause(whereClause)

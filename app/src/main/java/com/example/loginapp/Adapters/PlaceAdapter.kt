@@ -111,6 +111,18 @@ class PlaceAdapter(
                 placeClickListener.onMapClick(data)
             }
 
+            avatarImageView.setOnClickListener {
+                placeClickListener.onUserClick(data)
+            }
+
+            usernameView.setOnClickListener {
+                placeClickListener.onUserClick(data)
+            }
+
+            nicknameView.setOnClickListener {
+                placeClickListener.onUserClick(data)
+            }
+
             setInitialCreationDate(data.created)
 
             if (data.imageUrl.isNullOrEmpty()) {

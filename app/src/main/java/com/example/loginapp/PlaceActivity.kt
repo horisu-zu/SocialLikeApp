@@ -97,4 +97,11 @@
             val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
             return date?.let { dateFormat.format(it) } ?: ""
         }
+
+        override fun onBackPressed() {
+            super.onBackPressed()
+
+            val intent = Intent(this, HomeActivity::class.java)
+            startActivity(intent)
+        }
     }

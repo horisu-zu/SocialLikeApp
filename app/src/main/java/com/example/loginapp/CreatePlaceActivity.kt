@@ -41,6 +41,7 @@ class CreatePlaceActivity : AppCompatActivity() {
     private lateinit var addImageCard: CardView
     private lateinit var savePlaceButton: Button
     private lateinit var cathegoryField: TextInputLayout
+    private lateinit var categoryEditText: EditText
 
     private val GALLERY_REQUEST_CODE: Int = 1648
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -100,6 +101,8 @@ class CreatePlaceActivity : AppCompatActivity() {
                 )
 
                 savePlaceToBackendless(placeData)
+
+                finish()
             }
         }
 
@@ -289,10 +292,6 @@ class CreatePlaceActivity : AppCompatActivity() {
                         "додаванні місця: ${fault.message}")
             }
         })
-    }
-
-    interface ImageUploadCallback {
-        fun onImageUploaded(imageUrl: String)
     }
 
     companion object {

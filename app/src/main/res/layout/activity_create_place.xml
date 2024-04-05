@@ -46,11 +46,11 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
                 <AutoCompleteTextView
+                    android:id="@+id/categoryAutoCompleteTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:padding="10dp"
-                    />
+                    android:inputType="text"
+                    android:padding="10dp"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 
