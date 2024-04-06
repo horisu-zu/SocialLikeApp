@@ -1,6 +1,7 @@
 package com.example.loginapp.Models
 
 class User(
+    var objectId: String,
     var email: String,
     var password: String,
     var name: String,
@@ -11,5 +12,6 @@ class User(
     var country: String,
     var subscribersCount: Int,
     var subscriptionsCount: Int,
-    var avatarPath: String
+    var avatarPath: String,
+    var subscribedBy: List<String> = listOf()
 )

@@ -2,4 +2,10 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="red">#FF0000</color>
+
+    <color name="selected_tag_background">#FFFFFF</color>
+    <color name="default_tag_background">#000000</color>
+    <color name="default_tag_text">#FFFFFF</color>
+    <color name="selected_tag_text">#000000</color>
 </resources>

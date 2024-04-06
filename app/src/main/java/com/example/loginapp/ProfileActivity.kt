@@ -25,12 +25,14 @@ import com.example.loginapp.Fragments.Place.EmptyPlaceFragment
 import com.example.loginapp.Fragments.Place.PlaceFragment
 import com.example.loginapp.Models.Place
 import com.google.android.gms.location.*
+import com.google.android.material.card.MaterialCardView
 import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class ProfileActivity : AppCompatActivity() {
+    private val currentUser = Backendless.UserService.CurrentUser()
     private lateinit var user: BackendlessUser
     private lateinit var avatarPath: String
 
@@ -41,9 +43,11 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var profileSubscribersCount: TextView
     private lateinit var profileCreationDate: TextView
     private lateinit var profileGeolocation: TextView
+    private lateinit var profileSubscribeText: TextView
 
     private lateinit var backCard: CardView
     private lateinit var configurationCard: CardView
+    private lateinit var subscribeCard: MaterialCardView
     private lateinit var postItem: TextView
     private lateinit var likeItem: TextView
     private lateinit var placeItem: TextView
@@ -72,10 +76,18 @@ class ProfileActivity : AppCompatActivity() {
         profileAvatar = findViewById(R.id.avatarImageView)
         profileGeolocation = findViewById(R.id.locationView)
         profileCreationDate = findViewById(R.id.createDate)
+        profileSubscribeText = findViewById(R.id.subscribeText)
 
         backCard = findViewById(R.id.backCard)
+        subscribeCard = findViewById(R.id.subscribeCard)
         configurationCard = findViewById(R.id.configurationCard)
+
         configurationCard.visibility = View.GONE
+
+        if(userId == currentUser.objectId || userId == null) {
+            subscribeCard.visibility = View.GONE
+            configurationCard.visibility = View.VISIBLE
+        }
 
         postItem = findViewById(R.id.postNavigationItem)
         likeItem = findViewById(R.id.likeNavigationItem)
@@ -103,6 +115,10 @@ class ProfileActivity : AppCompatActivity() {
 
         backCard.setOnClickListener {
             onBackPressed()
+        }
+
+        subscribeCard.setOnClickListener {
+            subscribe()
         }
 
         configurationCard.setOnClickListener {
@@ -139,10 +155,8 @@ class ProfileActivity : AppCompatActivity() {
             })
         } else {
             Log.e("USER", "Current User")
-            user = Backendless.UserService.CurrentUser()
+            user = currentUser
             isCurrentUser = true
-
-            configurationCard.visibility = View.VISIBLE
 
             getUserPlaceFromServer()
             getUserInfo()
@@ -165,6 +179,19 @@ class ProfileActivity : AppCompatActivity() {
         profileGeolocation.text = user.getProperty("myLocation").toString()
 
         Picasso.get().load(avatarPath).into(profileAvatar)
+
+        ifIsSubscribed(currentUser)
+    }
+
+    private fun ifIsSubscribed(currentUser: BackendlessUser) {
+        if(isSubscribed(currentUser.objectId, user)) {
+            Log.e("CARD SUBSCRIBED", isSubscribed(currentUser.objectId, user).toString())
+            subscribeCard.strokeColor = getColor(R.color.red)
+            profileSubscribeText.text = "Відписатися"
+        } else {
+            subscribeCard.strokeColor = getColor(R.color.white)
+            profileSubscribeText.text = "Підписатися"
+        }
     }
 
     private fun selectNavigationItem(selectedItemId: Int) {
@@ -207,6 +234,78 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
+    private fun subscribe() {
+        val subscribeUser = user
+
+        val currentClause = "objectId = '${currentUser.objectId}'"
+        val subsClause = "objectId = '${subscribeUser.objectId}'"
+
+        val currentChanges = HashMap<String, Any>()
+        val subsChanges = HashMap<String, Any>()
+
+        Log.e("CURRENT", currentUser.objectId)
+        Log.e("SUBS", subscribeUser.objectId)
+
+        val subscribedOnArray = subscribeUser.getProperty("subscribedOn") as? Array<String>
+        var subscribedOnList = subscribedOnArray?.toList() ?: emptyList()
+
+        val subscribedByArray = currentUser.getProperty("subscribedBy") as? Array<String>
+        var subscribedByList = subscribedByArray?.toList() ?: emptyList()
+
+        if (isSubscribed(currentUser.objectId, subscribeUser)) {
+            subscribedByList = subscribedByList - currentUser.objectId
+            subscribedOnList = subscribedOnList - subscribeUser.objectId
+        } else {
+            subscribedOnList = subscribedOnList + subscribeUser.objectId
+            subscribedByList = subscribedByList + currentUser.objectId
+        }
+
+        currentChanges["subscribedOn"] = subscribedOnList
+        currentChanges["subscriptionsCount"] = subscribedOnList.size
+
+        Log.e("CURRENT CHANGES", currentChanges.toString())
+
+        subsChanges["subscribedBy"] = subscribedByList
+        subsChanges["subscribersCount"] = subscribedByList.size
+
+        /*currentUser.setProperty("subscribedOn", subscribedOnList)
+        currentUser.setProperty("subscriptionsCount", subscribedOnList.size)
+
+        subscribeUser.setProperty("subscribedBy", subscribedByList)
+        subscribeUser.setProperty("subscribersCount", subscribedByList.size)*/
+
+        Backendless.Data.of("Users").update(currentClause, currentChanges,
+                object : AsyncCallback<Int> {
+            override fun handleResponse(response: Int?) {
+            }
+
+            override fun handleFault(fault: BackendlessFault?) {
+                Log.e("CURRENT_ERROR", "Error: $fault")
+            }
+        })
+
+        Backendless.Data.of("Users").update(subsClause, subsChanges,
+                object : AsyncCallback<Int> {
+            override fun handleResponse(response: Int?) {
+                profileSubscriptionsCount.text = user.getProperty("subscriptionsCount").toString()
+                profileSubscribersCount.text = user.getProperty("subscribersCount").toString()
+            }
+
+            override fun handleFault(fault: BackendlessFault?) {
+                Log.e("ERROR", "Error: $fault")
+            }
+        })
+    }
+
+    private fun isSubscribed(currentUserObjectId: String, subscribeUser: BackendlessUser): Boolean {
+        val subscribedByArray = subscribeUser.getProperty("subscribedBy") as? Array<String>
+        val subscribedByList = subscribedByArray?.toList() ?: emptyList()
+
+        Log.e("LIST", subscribedByList.toString())
+        Log.e("CHECK", subscribedByList.contains(currentUserObjectId).toString())
+
+        return subscribedByList.contains(currentUserObjectId)
+    }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
                                             grantResults: IntArray) {

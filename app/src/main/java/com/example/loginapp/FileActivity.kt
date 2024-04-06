@@ -314,12 +314,17 @@ class FileActivity : AppCompatActivity() {
     }
 
     private fun showAccessDialog(userList: List<User>, fileFolder: FolderFile) {
-        val userNames = userList.map { it.baseNickname }.toTypedArray()
+        val currentUser = Backendless.UserService.CurrentUser()
+        val subscribedByArray = currentUser.getProperty("subscribedBy") as? Array<String>
+        val subscribedByList = subscribedByArray?.toList() ?: emptyList()
+
+        val filteredUserList = userList.filter { it.objectId in subscribedByList }
+        val userNames = filteredUserList.map { it.baseNickname }.toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle("Select User")
             .setItems(userNames) { dialog, which ->
-                val selectedUser = userList[which]
+                val selectedUser = filteredUserList[which]
                 grantAccessToFile(selectedUser, fileFolder)
             }
             .setNegativeButton("Cancel") { dialog, which ->
@@ -338,8 +343,12 @@ class FileActivity : AppCompatActivity() {
             object : AsyncCallback<List<Map<*, *>?>?> {
                 override fun handleResponse(foundUsers: List<Map<*, *>?>?) {
                     foundUsers?.forEach { userData ->
+                        val subscribedByArray = userData!!["subscribedBy"] as? Array<String>
+                        val subscribedByList = subscribedByArray?.toList() ?: emptyList()
+
                         val user = User(
-                            email = userData!!["email"].toString(),
+                            objectId = userData["objectId"].toString(),
+                            email = userData["email"].toString(),
                             password = userData["password"].toString(),
                             name = userData["name"].toString(),
                             nickname = userData["nickname"].toString(),
@@ -349,7 +358,8 @@ class FileActivity : AppCompatActivity() {
                             country = userData["country"].toString(),
                             subscribersCount = userData["subscribersCount"].toString().toInt(),
                             subscriptionsCount = userData["subscriptionsCount"].toString().toInt(),
-                            avatarPath = userData["avatarPath"].toString()
+                            avatarPath = userData["avatarPath"].toString(),
+                            subscribedBy = subscribedByList
                         )
                         userList.add(user)
                         Log.e("USER", user.baseNickname)

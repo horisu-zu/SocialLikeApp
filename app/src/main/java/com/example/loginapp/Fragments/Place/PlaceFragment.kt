@@ -53,6 +53,7 @@ class PlaceFragment : Fragment(), PlaceClickListener, TagClickListener {
     private lateinit var placeRecyclerView: RecyclerView
     private lateinit var placeAdapter: PlaceAdapter
     private var selectedSearchItem: String = ""
+    private var selectedTag: String = ""
     private val placeList: MutableList<Place> = ArrayList()
     private lateinit var originalCathegories: MutableList<String>
     private var isSearchPressed: Boolean = false
@@ -107,7 +108,7 @@ class PlaceFragment : Fragment(), PlaceClickListener, TagClickListener {
         }
 
         placeAdapter = PlaceAdapter(requireContext(), placeList, this, currentUserId,
-            this)
+            this, "")
         placeRecyclerView.adapter = placeAdapter
         placeRecyclerView.layoutManager = LinearLayoutManager(context)
 
@@ -136,7 +137,11 @@ class PlaceFragment : Fragment(), PlaceClickListener, TagClickListener {
         val filteredPlaces: List<Place> = when (selectedItem) {
             "Опис" -> placeList.filter { it.description.toLowerCase(Locale.getDefault()).contains(query) }
             "Категорія" -> placeList.filter { it.cathegory.toLowerCase(Locale.getDefault()).contains(query) }
-            "Тег" -> placeList.filter { it.hashtags.toLowerCase(Locale.getDefault()).contains(query) }
+            "Тег" -> {
+                selectedTag = query
+                placeAdapter.setTag(selectedTag)
+                placeList.filter { it.hashtags.toLowerCase(Locale.getDefault()).contains(query)
+                } }
             "Радіус" -> {
                 val userLocation = getUserLocation(requireContext())
                 val radius = query.toDoubleOrNull() ?: return
@@ -301,6 +306,7 @@ class PlaceFragment : Fragment(), PlaceClickListener, TagClickListener {
     }
 
     override fun onTagClick(tag: String) {
+        selectedTag = tag
         selectedSearchItem = "Тег"
         placeSearch.setText(tag)
         filterPlaces(selectedSearchItem)

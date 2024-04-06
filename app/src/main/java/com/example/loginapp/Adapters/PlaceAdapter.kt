@@ -27,7 +27,8 @@ class PlaceAdapter(
     private var dataList: List<Place>,
     private val placeClickListener: PlaceClickListener,
     private val currentUser: String,
-    private val tagClickListener: TagClickListener
+    private val tagClickListener: TagClickListener,
+    private var selectedTag: String
 ) : RecyclerView.Adapter<PlaceAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -35,6 +36,7 @@ class PlaceAdapter(
         return ViewHolder(view)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val data = dataList[position]
 
@@ -50,7 +52,7 @@ class PlaceAdapter(
 
             val tagsList: List<String> = data.hashtags.split(" ")
 
-            val hashtagAdapter = TagAdapter(context, tagsList, tagClickListener)
+            val hashtagAdapter = TagAdapter(context, tagsList, tagClickListener, selectedTag)
             metadataRecyclerView.apply {
                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL,
                     false)
@@ -147,8 +149,14 @@ class PlaceAdapter(
         return dataList.size
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setPlaces(places: List<Place>) {
         dataList = places
+        notifyDataSetChanged()
+    }
+
+    fun setTag(tag: String) {
+        selectedTag = tag
         notifyDataSetChanged()
     }
 
