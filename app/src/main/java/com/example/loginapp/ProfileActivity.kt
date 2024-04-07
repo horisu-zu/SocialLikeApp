@@ -10,6 +10,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -41,6 +42,8 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var profileNickname: TextView
     private lateinit var profileSubscriptionsCount: TextView
     private lateinit var profileSubscribersCount: TextView
+    private lateinit var profileSubscribersLayout: LinearLayout
+    private lateinit var profileSubscriptionsLayout: LinearLayout
     private lateinit var profileCreationDate: TextView
     private lateinit var profileGeolocation: TextView
     private lateinit var profileSubscribeText: TextView
@@ -73,6 +76,8 @@ class ProfileActivity : AppCompatActivity() {
         profileNickname = findViewById(R.id.nicknameTextView)
         profileSubscribersCount = findViewById(R.id.subscribersCount)
         profileSubscriptionsCount = findViewById(R.id.subscriptionsCount)
+        profileSubscribersLayout = findViewById(R.id.subscribersLayout)
+        profileSubscriptionsLayout = findViewById(R.id.subscriptionsLayout)
         profileAvatar = findViewById(R.id.avatarImageView)
         profileGeolocation = findViewById(R.id.locationView)
         profileCreationDate = findViewById(R.id.createDate)
@@ -119,6 +124,20 @@ class ProfileActivity : AppCompatActivity() {
 
         subscribeCard.setOnClickListener {
             subscribe()
+        }
+
+        profileSubscribersLayout.setOnClickListener {
+            val intent = Intent(this@ProfileActivity, SubsUsersActivity::class.java)
+            intent.putExtra("subsType", "Subscribers")
+            intent.putExtra("currentId", user.objectId)
+            startActivity(intent)
+        }
+
+        profileSubscriptionsLayout.setOnClickListener {
+            val intent = Intent(this@ProfileActivity, SubsUsersActivity::class.java)
+            intent.putExtra("subsType", "Subscriptions")
+            intent.putExtra("currentId", user.objectId)
+            startActivity(intent)
         }
 
         configurationCard.setOnClickListener {
