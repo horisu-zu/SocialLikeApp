@@ -162,12 +162,20 @@ class ConfigurationActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun updateProfilePreviewName(name: String) {
-        previewName.text = name
+        if(name.isEmpty()) {
+            previewName.text = user.getProperty("name").toString()
+        } else {
+            previewName.text = name
+        }
     }
 
     @SuppressLint("SetTextI18n")
     private fun updateProfilePreviewNickname(nickname: String) {
-        previewNickname.text = "@$nickname"
+        if(nickname.isEmpty()) {
+            previewNickname.text = "@${user.getProperty("nickname")}"
+        } else {
+            previewNickname.text = "@$nickname"
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

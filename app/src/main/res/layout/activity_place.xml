@@ -7,10 +7,86 @@
     tools:context=".PlaceActivity"
     android:background="@color/black">
 
-    <FrameLayout
-        android:id="@+id/fragment_container"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar"
+            android:elevation="0dp"
+            app:statusBarForeground="@color/black"
+            android:background="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
+                android:background="@color/black">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="15dp"
+                    app:strokeColor="@color/black"
+                    app:strokeWidth="0dp">
+
+                    <RelativeLayout
+                        android:padding="5dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/black"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/backCard"
+                            app:cardCornerRadius="20dp"
+                            android:layout_marginStart="15dp"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:strokeWidth="4dp">
+
+                            <ImageView
+                                android:src="@drawable/ic_back"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="10dp"
+                                android:background="@color/black"/>
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            app:cardCornerRadius="20dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginStart="15dp"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp" >
+
+                            <ImageView
+                                android:id="@+id/imageIcon"
+                                android:src="@drawable/bird_icon"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </RelativeLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </com.google.android.material.appbar.MaterialToolbar>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <Button
         android:id="@+id/addButton"

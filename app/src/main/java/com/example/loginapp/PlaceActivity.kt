@@ -5,6 +5,7 @@
     import android.util.Log
     import android.widget.Button
     import androidx.appcompat.app.AppCompatActivity
+    import androidx.cardview.widget.CardView
     import com.backendless.Backendless
     import com.backendless.async.callback.AsyncCallback
     import com.backendless.exceptions.BackendlessFault
@@ -18,6 +19,8 @@
 
     class PlaceActivity : AppCompatActivity() {
         private lateinit var addButton: Button
+        private lateinit var backCard: CardView
+
         private val placeList: MutableList<Place> = ArrayList()
 
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,12 +28,17 @@
             setContentView(R.layout.activity_place)
 
             addButton = findViewById(R.id.addButton)
+            backCard = findViewById(R.id.backCard)
 
             getDataFromServer()
 
             addButton.setOnClickListener {
                 val intent = Intent(this@PlaceActivity, CreatePlaceActivity::class.java)
                 startActivity(intent)
+            }
+
+            backCard.setOnClickListener {
+                onBackPressed()
             }
         }
 
