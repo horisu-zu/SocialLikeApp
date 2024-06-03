@@ -76,7 +76,10 @@ class HomeActivity : AppCompatActivity() {
                 R.id.nav_bookmarks -> {
                     true
                 }
-                R.id.nav_list -> {
+                R.id.nav_friends -> {
+                    val intent = Intent(this, FriendsActivity::class.java)
+                    startActivity(intent)
+
                     true
                 }
                 else -> false

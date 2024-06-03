@@ -14,6 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.cardview.widget.CardView
 import com.backendless.Backendless
 import com.backendless.BackendlessUser
@@ -36,6 +37,7 @@ class ConfigurationActivity : AppCompatActivity() {
     private lateinit var editAvatar: FloatingActionButton
     private lateinit var saveButton: CardView
     private lateinit var passwordCard: CardView
+    private lateinit var geolocationSwitch: SwitchCompat
 
     private lateinit var previewAvatar: ImageView
     private lateinit var previewName: TextView
@@ -53,6 +55,7 @@ class ConfigurationActivity : AppCompatActivity() {
         editAvatar = findViewById(R.id.fabUploadImage)
         saveButton = findViewById(R.id.saveCard)
         passwordCard = findViewById(R.id.passwordCard)
+        geolocationSwitch = findViewById(R.id.geolocationSwitch)
 
         previewAvatar = findViewById(R.id.avatarImageView)
         previewName = findViewById(R.id.nameTextView)
@@ -88,30 +91,41 @@ class ConfigurationActivity : AppCompatActivity() {
 
         saveButton.setOnClickListener {
             val nickname = previewNickname.text.toString().substringAfterLast("@")
-            user.setProperty("name", previewName.text.toString())
+            val name = previewName.text.toString()
+            val geoAccess = geolocationSwitch.isChecked
+
+            if (name.isEmpty() || nickname.isEmpty()) {
+                Toast.makeText(this, "Name or nickname cannot be empty", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            user.setProperty("name", name)
             user.setProperty("nickname", nickname)
+            user.setProperty("geolocationEnabled", geoAccess)
+
+            user.removeProperty("myLocation")
+
             if (::avatarPath.isInitialized) {
                 user.setProperty("avatarPath", avatarPath)
             } else {
                 Toast.makeText(this, "No new avatar selected", Toast.LENGTH_SHORT).show()
             }
 
-            Backendless.UserService.update(user, object: AsyncCallback<BackendlessUser> {
+            Backendless.UserService.update(user, object : AsyncCallback<BackendlessUser> {
                 override fun handleResponse(response: BackendlessUser?) {
                     Toast.makeText(this@ConfigurationActivity, "Дані успішно оновлено",
                         Toast.LENGTH_SHORT).show()
 
-                    val intent = Intent(this@ConfigurationActivity,
-                        HomeActivity::class.java)
+                    val intent = Intent(this@ConfigurationActivity, HomeActivity::class.java)
                     startActivity(intent)
                     finish()
                 }
 
                 override fun handleFault(fault: BackendlessFault?) {
-                    Toast.makeText(this@ConfigurationActivity,
-                        "Помилка при оновленні даних", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@ConfigurationActivity, "Помилка при оновленні даних",
+                        Toast.LENGTH_SHORT).show()
+                    Log.e("Update Error", fault.toString())
                 }
-
             })
         }
 
@@ -150,6 +164,7 @@ class ConfigurationActivity : AppCompatActivity() {
         previewNickname.text = "@${user.getProperty("nickname")}"
         previewSubscribersCount.text = user.getProperty("subscribersCount").toString()
         previewSubscriptionsCount.text = user.getProperty("subscriptionsCount").toString()
+        geolocationSwitch.isChecked = user.getProperty("geolocationEnabled").toString().toBoolean()
 
         val oldAvatarPath = user.getProperty("avatarPath").toString()
         Log.e("AVATAR", oldAvatarPath)

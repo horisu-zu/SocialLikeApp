@@ -84,7 +84,7 @@ class UserListFragment : Fragment(), UserClickListener {
                         val userList = mutableListOf<User>()
                         response?.let { userMapList ->
                             for (userMap in userMapList) {
-                                val user = createUserFromMap(userMap)
+                                val user = getUserFromMap(userMap)
                                 if (user.objectId != userId) {
                                     userList.add(user)
                                 }
@@ -134,7 +134,7 @@ class UserListFragment : Fragment(), UserClickListener {
                         Backendless.Data.of("Users").find(queryBuilder,
                             object : AsyncCallback<List<MutableMap<Any?, Any?>>> {
                                 override fun handleResponse(response: List<MutableMap<Any?, Any?>>?) {
-                                    val userList = response?.mapNotNull { createUserFromMap(it) }
+                                    val userList = response?.mapNotNull { getUserFromMap(it) }
                                     callback(userList ?: emptyList())
                                 }
 
@@ -153,7 +153,7 @@ class UserListFragment : Fragment(), UserClickListener {
             })
     }
 
-    private fun createUserFromMap(userMap: Map<Any?, Any?>): User {
+    private fun getUserFromMap(userMap: Map<Any?, Any?>): User {
         return User(
             objectId = userMap["objectId"] as? String ?: "",
             email = userMap["email"] as? String ?: "",
@@ -168,7 +168,8 @@ class UserListFragment : Fragment(), UserClickListener {
             subscriptionsCount = userMap["subscriptionsCount"] as? Int ?: 0,
             avatarPath = userMap["avatarPath"] as? String ?: "",
             subscribedBy = (userMap["subscribedBy"] as? List<String>) ?: listOf(),
-            subscribedOn = (userMap["subscribedOn"] as? List<String>) ?: listOf()
+            subscribedOn = (userMap["subscribedOn"] as? List<String>) ?: listOf(),
+            friendsWith = (userMap["friendsWith"] as? List<String>) ?: listOf()
         )
     }
 

@@ -26,6 +26,12 @@
             app:actionLayout="@layout/menu_item"/>
 
         <item
+            android:id="@+id/nav_friends"
+            android:icon="@drawable/ic_friends"
+            android:title="Друзі"
+            app:actionLayout="@layout/menu_item" />
+
+        <item
             android:id="@+id/nav_folders"
             android:icon="@drawable/ic_folder"
             android:title="Папки"
@@ -35,12 +41,6 @@
             android:id="@+id/nav_bookmarks"
             android:icon="@drawable/ic_bookmark"
             android:title="Закладки"
-            app:actionLayout="@layout/menu_item" />
-
-        <item
-            android:id="@+id/nav_list"
-            android:icon="@drawable/ic_list"
-            android:title="Списки"
             app:actionLayout="@layout/menu_item" />
 
     </group>

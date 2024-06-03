@@ -14,5 +14,6 @@ class User(
     var subscriptionsCount: Int,
     var avatarPath: String,
     var subscribedBy: List<String> = listOf(),
-    var subscribedOn: List<String> = listOf()
+    var subscribedOn: List<String> = listOf(),
+    var friendsWith: List<String> = listOf()
 )

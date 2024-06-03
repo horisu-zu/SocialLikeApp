@@ -211,6 +211,24 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"/>
 
+        <TextView
+            android:text="Відслідковувати геоположення"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:layout_marginTop="10dp"
+            android:textSize="15sp"
+            android:layout_gravity="center_horizontal"/>
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/geolocationSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            app:thumbTint="@color/switch_selector"
+            app:trackTint="#7E7E7E"
+            />
+
     </LinearLayout>
 
     <com.google.android.material.card.MaterialCardView

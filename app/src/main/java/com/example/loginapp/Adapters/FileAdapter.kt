@@ -7,7 +7,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.loginapp.Listeners.FolderClickListener
 import com.example.loginapp.Listeners.FolderFileClickListener
 import com.example.loginapp.Models.FolderFile
 import com.example.loginapp.R

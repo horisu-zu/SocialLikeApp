@@ -14,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import com.backendless.Backendless
@@ -42,6 +43,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var profileNickname: TextView
     private lateinit var profileSubscriptionsCount: TextView
     private lateinit var profileSubscribersCount: TextView
+    private lateinit var profileFriendsCount: TextView
     private lateinit var profileSubscribersLayout: LinearLayout
     private lateinit var profileSubscriptionsLayout: LinearLayout
     private lateinit var profileCreationDate: TextView
@@ -51,6 +53,8 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var backCard: CardView
     private lateinit var configurationCard: CardView
     private lateinit var subscribeCard: MaterialCardView
+    private lateinit var friendAddCard: MaterialCardView
+    private lateinit var friendImage: ImageView
     private lateinit var postItem: TextView
     private lateinit var likeItem: TextView
     private lateinit var placeItem: TextView
@@ -76,6 +80,7 @@ class ProfileActivity : AppCompatActivity() {
         profileNickname = findViewById(R.id.nicknameTextView)
         profileSubscribersCount = findViewById(R.id.subscribersCount)
         profileSubscriptionsCount = findViewById(R.id.subscriptionsCount)
+        profileFriendsCount = findViewById(R.id.friendsCount)
         profileSubscribersLayout = findViewById(R.id.subscribersLayout)
         profileSubscriptionsLayout = findViewById(R.id.subscriptionsLayout)
         profileAvatar = findViewById(R.id.avatarImageView)
@@ -85,12 +90,15 @@ class ProfileActivity : AppCompatActivity() {
 
         backCard = findViewById(R.id.backCard)
         subscribeCard = findViewById(R.id.subscribeCard)
+        friendAddCard = findViewById(R.id.friendAddCard)
+        friendImage = findViewById(R.id.friendImage)
         configurationCard = findViewById(R.id.configurationCard)
 
         configurationCard.visibility = View.GONE
 
         if(userId == currentUser.objectId || userId == null) {
             subscribeCard.visibility = View.GONE
+            friendAddCard.visibility = View.GONE
             configurationCard.visibility = View.VISIBLE
         }
 
@@ -126,6 +134,10 @@ class ProfileActivity : AppCompatActivity() {
             subscribe()
         }
 
+        friendAddCard.setOnClickListener {
+
+        }
+
         profileSubscribersLayout.setOnClickListener {
             val intent = Intent(this@ProfileActivity, SubsUsersActivity::class.java)
             intent.putExtra("subsType", "Subscribers")
@@ -147,7 +159,8 @@ class ProfileActivity : AppCompatActivity() {
 
         if(isCurrentUser) {
             if (ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && user.getProperty("geolocationEnabled") == true) {
                 getCurrentLocation()
             } else {
                 ActivityCompat.requestPermissions(this,
@@ -193,6 +206,7 @@ class ProfileActivity : AppCompatActivity() {
         profileNickname.text = "@${user.getProperty("nickname")}"
         profileSubscribersCount.text = user.getProperty("subscribersCount").toString()
         profileSubscriptionsCount.text = user.getProperty("subscriptionsCount").toString()
+        profileFriendsCount.text = user.getProperty("friendsCount").toString()
         avatarPath = user.getProperty("avatarPath").toString()
         profileCreationDate.text = formattedDate
         profileGeolocation.text = user.getProperty("myLocation").toString()
@@ -200,6 +214,7 @@ class ProfileActivity : AppCompatActivity() {
         Picasso.get().load(avatarPath).into(profileAvatar)
 
         ifIsSubscribed(currentUser)
+        isFriendsWith(currentUser)
     }
 
     private fun ifIsSubscribed(currentUser: BackendlessUser) {
@@ -211,6 +226,21 @@ class ProfileActivity : AppCompatActivity() {
             subscribeCard.strokeColor = getColor(R.color.white)
             profileSubscribeText.text = "Підписатися"
         }
+    }
+
+    private fun isFriendsWith(currentUser: BackendlessUser) {
+        val isFriend = isFriendsWith(currentUser.objectId, user)
+
+        val drawableRes = if (isFriend) {
+            Log.e("CARD SUBSCRIBED", isSubscribed(currentUser.objectId, user).toString())
+            friendAddCard.strokeColor = getColor(R.color.red)
+            AppCompatResources.getDrawable(applicationContext, R.drawable.remove_friend)
+        } else {
+            friendAddCard.strokeColor = getColor(R.color.white)
+            AppCompatResources.getDrawable(applicationContext, R.drawable.add_friend)
+        }
+
+        friendImage.setImageDrawable(drawableRes)
     }
 
     private fun selectNavigationItem(selectedItemId: Int) {
@@ -316,14 +346,120 @@ class ProfileActivity : AppCompatActivity() {
         })
     }
 
+    /*private fun addOrRemoveFriend() {
+        val friendUser = user
+
+        val currentClause = "objectId = '${currentUser.objectId}'"
+        val friendClause = "objectId = '${friendUser.objectId}'"
+
+        val currentChanges = HashMap<String, Any>()
+        val friendChanges = HashMap<String, Any>()
+
+        Log.e("CURRENT", currentUser.objectId)
+        Log.e("FRIEND", friendUser.objectId)
+
+        val friendsArray = currentUser.getProperty("friends") as? Array<String>
+        var friendsList = friendsArray?.toList() ?: emptyList()
+
+        val friendsUserArray = friendUser.getProperty("friends") as? Array<String>
+        var friendsUserList = friendsUserArray?.toList() ?: emptyList()
+
+        if (isFriendsWith(currentUser.objectId, friendUser)) {
+            friendsList = friendsList - friendUser.objectId
+            friendsUserList = friendsUserList - currentUser.objectId
+        } else {
+            friendsList = friendsList + friendUser.objectId
+            friendsUserList = friendsUserList + currentUser.objectId
+        }
+
+        currentChanges["friends"] = friendsList
+        currentChanges["friendsCount"] = friendsList.size
+
+        Log.e("CURRENT CHANGES", currentChanges.toString())
+
+        friendChanges["friends"] = friendsUserList
+        friendChanges["friendsCount"] = friendsUserList.size
+
+        Backendless.Data.of("Users").update(currentClause, currentChanges,
+            object : AsyncCallback<Int> {
+                override fun handleResponse(response: Int?) {
+                }
+
+                override fun handleFault(fault: BackendlessFault?) {
+                    Log.e("CURRENT_ERROR", "Error: $fault")
+                }
+            })
+
+        Backendless.Data.of("Users").update(friendClause, friendChanges,
+            object : AsyncCallback<Int> {
+                override fun handleResponse(response: Int?) {
+                    profileFriendsCount.text = currentUser.getProperty("friendsCount").toString()
+                }
+
+                override fun handleFault(fault: BackendlessFault?) {
+                    Log.e("FRIEND_ERROR", "Error: $fault")
+                }
+            })
+    }*/
+
+    private fun addFriend() {
+        val friendUser = user
+
+        val friendClause = "objectId = '${friendUser.objectId}'"
+
+        val friendRequestsChanges = HashMap<String, Any>()
+
+        Log.e("CURRENT", currentUser.objectId)
+        Log.e("FRIEND", friendUser.objectId)
+
+        val friendRequestsArray = friendUser.getProperty("friendRequests") as? Array<String>
+        var friendRequestsList = friendRequestsArray?.toList() ?: emptyList()
+
+        if (!isFriendsWith(currentUser.objectId, friendUser) &&
+            !friendRequestsList.contains(currentUser.objectId)) {
+            friendRequestsList = friendRequestsList + currentUser.objectId
+
+            friendRequestsChanges["friendRequests"] = friendRequestsList
+
+            Log.e("FRIEND REQUESTS CHANGES", friendRequestsChanges.toString())
+
+            Backendless.Data.of("Users").update(friendClause, friendRequestsChanges,
+                object : AsyncCallback<Int> {
+                    override fun handleResponse(response: Int?) {
+                        Log.i("FRIEND_REQUEST", "Friend request sent successfully")
+                    }
+
+                    override fun handleFault(fault: BackendlessFault?) {
+                        Log.e("FRIEND_REQUEST_ERROR", "Error: $fault")
+                    }
+                })
+        } else {
+            Log.i("FRIEND_REQUEST", "Already friends or request already sent")
+        }
+    }
+
     private fun isSubscribed(currentUserObjectId: String, subscribeUser: BackendlessUser): Boolean {
         val subscribedByArray = subscribeUser.getProperty("subscribedBy") as? Array<String>
         val subscribedByList = subscribedByArray?.toList() ?: emptyList()
 
-        Log.e("LIST", subscribedByList.toString())
-        Log.e("CHECK", subscribedByList.contains(currentUserObjectId).toString())
+        val isSubscribed = subscribedByList.contains(currentUserObjectId).also { result ->
+            Log.e("LIST", subscribedByList.toString())
+            Log.e("CHECK", result.toString())
+        }
 
-        return subscribedByList.contains(currentUserObjectId)
+        return isSubscribed
+    }
+
+    private fun isFriendsWith(currentUserObjectId: String, friendUser: BackendlessUser): Boolean {
+        val friendsWithArray = friendUser.getProperty("friendsWith") as? Array<String>
+        val friendsWithList = friendsWithArray?.toList() ?: emptyList()
+
+        val isFriendsWith = friendsWithList.contains(currentUserObjectId).also { result ->
+            Log.e("LIST", friendsWithList.toString())
+            Log.e("CHECK", result.toString())
+        }
+
+        return isFriendsWith
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
@@ -373,9 +509,9 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun getUserPlaceFromServer() {
-        val nickname = user.getProperty("nickname")
+        val objectId = user.getProperty("objectId")
 
-        val whereClause = "authorNickname = '$nickname'"
+        val whereClause = "ownerId = '$objectId'"
         val queryBuilder = DataQueryBuilder.create().setWhereClause(whereClause)
 
         Backendless.Data.of("Place").find(queryBuilder,
