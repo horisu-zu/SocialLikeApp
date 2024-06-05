@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_send_message"
+        android:title="Надіслати повідомлення" />
+    <item
+        android:id="@+id/action_remove_friend"
+        android:title="Видалити зі списку друзів" />
+</menu>

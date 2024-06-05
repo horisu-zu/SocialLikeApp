@@ -169,7 +169,8 @@ class UserListFragment : Fragment(), UserClickListener {
             avatarPath = userMap["avatarPath"] as? String ?: "",
             subscribedBy = (userMap["subscribedBy"] as? List<String>) ?: listOf(),
             subscribedOn = (userMap["subscribedOn"] as? List<String>) ?: listOf(),
-            friendsWith = (userMap["friendsWith"] as? List<String>) ?: listOf()
+            friendsWith = (userMap["friendsWith"] as? List<String>) ?: listOf(),
+            friendRequests = (userMap["friendRequests"] as? List<String>) ?: listOf()
         )
     }
 

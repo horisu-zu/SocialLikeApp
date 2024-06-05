@@ -8,4 +8,8 @@
     <color name="default_tag_background">#000000</color>
     <color name="default_tag_text">#FFFFFF</color>
     <color name="selected_tag_text">#000000</color>
+
+    <color name="default_tab_color">#FF424242</color>
+    <color name="selected_tab_color">#737373</color>
+
 </resources>

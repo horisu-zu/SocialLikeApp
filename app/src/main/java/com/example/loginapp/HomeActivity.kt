@@ -78,6 +78,7 @@ class HomeActivity : AppCompatActivity() {
                 }
                 R.id.nav_friends -> {
                     val intent = Intent(this, FriendsActivity::class.java)
+                    intent.putExtra("userId", user.objectId)
                     startActivity(intent)
 
                     true

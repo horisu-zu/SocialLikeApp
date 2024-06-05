@@ -135,7 +135,7 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         friendAddCard.setOnClickListener {
-
+            addFriend()
         }
 
         profileSubscribersLayout.setOnClickListener {
@@ -346,62 +346,6 @@ class ProfileActivity : AppCompatActivity() {
         })
     }
 
-    /*private fun addOrRemoveFriend() {
-        val friendUser = user
-
-        val currentClause = "objectId = '${currentUser.objectId}'"
-        val friendClause = "objectId = '${friendUser.objectId}'"
-
-        val currentChanges = HashMap<String, Any>()
-        val friendChanges = HashMap<String, Any>()
-
-        Log.e("CURRENT", currentUser.objectId)
-        Log.e("FRIEND", friendUser.objectId)
-
-        val friendsArray = currentUser.getProperty("friends") as? Array<String>
-        var friendsList = friendsArray?.toList() ?: emptyList()
-
-        val friendsUserArray = friendUser.getProperty("friends") as? Array<String>
-        var friendsUserList = friendsUserArray?.toList() ?: emptyList()
-
-        if (isFriendsWith(currentUser.objectId, friendUser)) {
-            friendsList = friendsList - friendUser.objectId
-            friendsUserList = friendsUserList - currentUser.objectId
-        } else {
-            friendsList = friendsList + friendUser.objectId
-            friendsUserList = friendsUserList + currentUser.objectId
-        }
-
-        currentChanges["friends"] = friendsList
-        currentChanges["friendsCount"] = friendsList.size
-
-        Log.e("CURRENT CHANGES", currentChanges.toString())
-
-        friendChanges["friends"] = friendsUserList
-        friendChanges["friendsCount"] = friendsUserList.size
-
-        Backendless.Data.of("Users").update(currentClause, currentChanges,
-            object : AsyncCallback<Int> {
-                override fun handleResponse(response: Int?) {
-                }
-
-                override fun handleFault(fault: BackendlessFault?) {
-                    Log.e("CURRENT_ERROR", "Error: $fault")
-                }
-            })
-
-        Backendless.Data.of("Users").update(friendClause, friendChanges,
-            object : AsyncCallback<Int> {
-                override fun handleResponse(response: Int?) {
-                    profileFriendsCount.text = currentUser.getProperty("friendsCount").toString()
-                }
-
-                override fun handleFault(fault: BackendlessFault?) {
-                    Log.e("FRIEND_ERROR", "Error: $fault")
-                }
-            })
-    }*/
-
     private fun addFriend() {
         val friendUser = user
 
@@ -416,7 +360,7 @@ class ProfileActivity : AppCompatActivity() {
         var friendRequestsList = friendRequestsArray?.toList() ?: emptyList()
 
         if (!isFriendsWith(currentUser.objectId, friendUser) &&
-            !friendRequestsList.contains(currentUser.objectId)) {
+                !friendRequestsList.contains(currentUser.objectId)) {
             friendRequestsList = friendRequestsList + currentUser.objectId
 
             friendRequestsChanges["friendRequests"] = friendRequestsList

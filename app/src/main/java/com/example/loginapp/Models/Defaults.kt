@@ -5,3 +5,15 @@ object Defaults {
     const val apiKey : String = "CB86EDC0-E1F2-4A70-886B-32F00FDC755C"
     const val serverUrl: String = "https://api.backendless.com"
 }
+
+object UserListManager {
+    private var userList: List<User>? = null
+
+    fun setUserList(list: List<User>) {
+        userList = list
+    }
+
+    fun getUserList(): List<User>? {
+        return userList
+    }
+}
