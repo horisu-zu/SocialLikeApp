@@ -6,6 +6,14 @@ object Defaults {
     const val serverUrl: String = "https://api.backendless.com"
 }
 
+object CurrentUserItems {
+    var currentUserId: String? = null
+
+    fun setCurrentId(currentId: String) {
+        currentUserId = currentId
+    }
+}
+
 object UserListManager {
     private var userList: List<User>? = null
 

@@ -41,7 +41,7 @@ class FriendsFragment : Fragment(), FriendClickListener {
         recyclerViewFriends = view.findViewById(R.id.friendsRecycler)
         recyclerViewFriends.layoutManager = LinearLayoutManager(requireContext())
 
-        userList = UserListManager.getUserList()!!
+        userList = UserListManager.getUserList() ?: listOf()
         friendsAdapter = FriendsAdapter(requireContext(), userList, this)
         recyclerViewFriends.adapter = friendsAdapter
     }

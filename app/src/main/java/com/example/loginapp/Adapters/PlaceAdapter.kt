@@ -155,6 +155,7 @@ class PlaceAdapter(
         notifyDataSetChanged()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setTag(tag: String) {
         selectedTag = tag
         notifyDataSetChanged()

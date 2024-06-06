@@ -11,6 +11,7 @@ import com.backendless.exceptions.BackendlessFault
 import com.backendless.persistence.DataQueryBuilder
 import com.example.loginapp.Fragments.Friend.FriendsFragment
 import com.example.loginapp.Fragments.Friend.RequestFragment
+import com.example.loginapp.Fragments.Friend.SearchFragment
 import com.example.loginapp.Models.User
 import com.example.loginapp.Models.UserListManager
 import com.google.android.material.card.MaterialCardView
@@ -18,6 +19,7 @@ import com.google.android.material.card.MaterialCardView
 class FriendsActivity : AppCompatActivity() {
     private lateinit var friendsTab: MaterialCardView
     private lateinit var requestsTab: MaterialCardView
+    private lateinit var searchTab: MaterialCardView
     private lateinit var backCard: MaterialCardView
     private lateinit var userId: String
 
@@ -29,6 +31,7 @@ class FriendsActivity : AppCompatActivity() {
 
         friendsTab = findViewById(R.id.friendsTab)
         requestsTab = findViewById(R.id.requestsTab)
+        searchTab = findViewById(R.id.searchTab)
         backCard = findViewById(R.id.backCard)
 
         fetchAndLoadFragment(FriendsListType.FRIENDS, friendsTab)
@@ -41,6 +44,10 @@ class FriendsActivity : AppCompatActivity() {
             fetchAndLoadFragment(FriendsListType.REQUESTS, requestsTab)
         }
 
+        searchTab.setOnClickListener {
+            fetchAndLoadFragment(FriendsListType.SEARCH, searchTab)
+        }
+
         backCard.setOnClickListener {
             onBackPressed()
         }
@@ -50,6 +57,8 @@ class FriendsActivity : AppCompatActivity() {
         friendsTab.setCardBackgroundColor(ContextCompat.getColor(this,
             R.color.default_tab_color))
         requestsTab.setCardBackgroundColor(ContextCompat.getColor(this,
+            R.color.default_tab_color))
+        searchTab.setCardBackgroundColor(ContextCompat.getColor(this,
             R.color.default_tab_color))
 
         selectedTab.setCardBackgroundColor(ContextCompat.getColor(this,
@@ -63,6 +72,7 @@ class FriendsActivity : AppCompatActivity() {
             val fragment: Fragment = when (friendsListType) {
                 FriendsListType.FRIENDS -> FriendsFragment()
                 FriendsListType.REQUESTS -> RequestFragment()
+                FriendsListType.SEARCH -> SearchFragment()
                 else -> throw IllegalArgumentException("Invalid friends list type")
             }
 
@@ -81,28 +91,6 @@ class FriendsActivity : AppCompatActivity() {
     private fun getUsers(userId: String, friendsListType: FriendsListType,
                          callback: (List<User>) -> Unit) {
         when (friendsListType) {
-            FriendsListType.ALL_USERS -> {
-                Backendless.Data.of("Users").find(
-                    object : AsyncCallback<List<MutableMap<Any?, Any?>>> {
-                        override fun handleResponse(response: List<MutableMap<Any?, Any?>>?) {
-                            val userList = mutableListOf<User>()
-                            response?.let { userMapList ->
-                                for (userMap in userMapList) {
-                                    val user = getUserFromMap(userMap)
-                                    if (user.objectId != userId) {
-                                        userList.add(user)
-                                    }
-                                }
-                            }
-                            callback(userList)
-                        }
-
-                        override fun handleFault(fault: BackendlessFault?) {
-                            Log.e("FAULT", fault.toString())
-                        }
-                    })
-            }
-
             FriendsListType.FRIENDS -> {
                 fetchUserByStatus(userId, "friendsWith", callback)
             }
@@ -110,7 +98,51 @@ class FriendsActivity : AppCompatActivity() {
             FriendsListType.REQUESTS -> {
                 fetchUserByStatus(userId, "friendRequests", callback)
             }
+
+            FriendsListType.SEARCH -> {
+                fetchUserBy(userId, callback)
+            }
         }
+    }
+
+    private fun fetchUserBy(userObjectId: String, callback: (List<User>) -> Unit) {
+        Backendless.Data.of("Users").findById(userObjectId,
+            object : AsyncCallback<MutableMap<Any?, Any?>> {
+                override fun handleResponse(response: MutableMap<Any?, Any?>?) {
+                    response?.let { user ->
+                        val friendsArray = user["friendsWith"] as? Array<String>
+                        val friendsList = friendsArray?.toList() ?: emptyList()
+
+                        val whereClause = buildString {
+                            append("objectId != '$userObjectId' ")
+                            if (friendsList.isNotEmpty()) {
+                                append("AND objectId NOT IN " +
+                                        "('${friendsList.joinToString("', '")}') ")
+                            }
+                        }
+
+                        val queryBuilder = DataQueryBuilder.create().setWhereClause(whereClause)
+                        Backendless.Data.of("Users").find(queryBuilder,
+                            object : AsyncCallback<List<MutableMap<Any?, Any?>>> {
+                                override fun handleResponse(response: List<MutableMap<Any?, Any?>>?) {
+                                    val userList = response?.mapNotNull { getUserFromMap(it) }
+                                    callback(userList ?: emptyList())
+                                }
+
+                                override fun handleFault(fault: BackendlessFault?) {
+                                    Log.e("FAULT", fault.toString())
+                                    callback(emptyList())
+                                }
+                            })
+                    }
+                }
+
+                override fun handleFault(fault: BackendlessFault?) {
+                    Log.e("FAULT", fault.toString())
+                    callback(emptyList())
+                }
+            }
+        )
     }
 
     private fun fetchUserByStatus(userObjectId: String, field: String,
@@ -123,7 +155,7 @@ class FriendsActivity : AppCompatActivity() {
                         val frArray = user?.get(field) as? Array<String>
                         val frList = frArray?.toList() ?: emptyList()
 
-                        Log.e("SUBSCR", frList.toString())
+                        Log.e("FR", frList.toString())
 
                         val whereClause = "objectId IN ('${frList.joinToString("', '")}')"
                         val queryBuilder = DataQueryBuilder.create().setWhereClause(whereClause)
@@ -150,6 +182,9 @@ class FriendsActivity : AppCompatActivity() {
     }
 
     private fun getUserFromMap(userMap: Map<Any?, Any?>): User {
+        val friendRequestsArray = userMap["friendRequests"] as? Array<String>
+        val friendRequestsList = friendRequestsArray?.toList() ?: emptyList()
+
         return User(
             objectId = userMap["objectId"] as? String ?: "",
             email = userMap["email"] as? String ?: "",
@@ -166,13 +201,13 @@ class FriendsActivity : AppCompatActivity() {
             subscribedBy = (userMap["subscribedBy"] as? List<String>) ?: listOf(),
             subscribedOn = (userMap["subscribedOn"] as? List<String>) ?: listOf(),
             friendsWith = (userMap["friendsWith"] as? List<String>) ?: listOf(),
-            friendRequests = (userMap["friendRequests"] as? List<String>) ?: listOf()
+            friendRequests = friendRequestsList
         )
     }
 
     enum class FriendsListType {
-        ALL_USERS,
         FRIENDS,
-        REQUESTS
+        REQUESTS,
+        SEARCH
     }
 }

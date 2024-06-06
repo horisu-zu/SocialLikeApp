@@ -2,6 +2,7 @@ package com.example.loginapp.Adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,12 +19,14 @@ class FriendsAdapter(private val context: Context, private val userList: List<Us
     RecyclerView.Adapter<FriendsAdapter.FriendViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.friends_component, parent, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.friends_component, parent,
+            false)
         return FriendViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: FriendViewHolder, position: Int) {
         val user = userList[position]
+        Log.d("SearchAdapter", "Binding user: $user")
         holder.bind(user)
     }
 

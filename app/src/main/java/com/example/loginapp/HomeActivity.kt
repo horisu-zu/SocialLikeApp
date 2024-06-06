@@ -11,6 +11,7 @@ import com.backendless.Backendless
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.loginapp.Fragments.FolderFragment
+import com.example.loginapp.Models.CurrentUserItems
 import com.google.android.material.navigation.NavigationView
 
 class HomeActivity : AppCompatActivity() {
@@ -26,6 +27,8 @@ class HomeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_home)
 
         val user = Backendless.UserService.CurrentUser()
+
+        CurrentUserItems.setCurrentId(user.objectId)
 
         drawerLayout = findViewById(R.id.drawer_layout)
         profileNavigationView = findViewById(R.id.profile_nav_view)

@@ -36,7 +36,7 @@ class RequestFragment : Fragment(), RequestClickListener {
         recyclerViewRequests = view.findViewById(R.id.requestRecycler)
         recyclerViewRequests.layoutManager = LinearLayoutManager(requireContext())
 
-        userList = UserListManager.getUserList()!!
+        userList = UserListManager.getUserList() ?: listOf()
         requestAdapter = RequestAdapter(requireContext(), userList, this)
         recyclerViewRequests.adapter = requestAdapter
     }
