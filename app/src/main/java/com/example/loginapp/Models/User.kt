@@ -1,5 +1,7 @@
 package com.example.loginapp.Models
 
+import com.backendless.persistence.Point
+
 class User(
     var objectId: String,
     var email: String,
@@ -15,6 +17,8 @@ class User(
     var avatarPath: String,
     var subscribedBy: List<String> = listOf(),
     var subscribedOn: List<String> = listOf(),
+    var myLocation: Point?,
+    var geolocationEnabled: Boolean,
     var friendsWith: List<String> = listOf(),
     var friendRequests: List<String> = listOf()
 )

@@ -21,6 +21,7 @@ import com.backendless.Backendless
 import com.backendless.BackendlessUser
 import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
+import com.backendless.logging.Logger
 import com.backendless.persistence.DataQueryBuilder
 import com.backendless.persistence.Point
 import com.example.loginapp.Fragments.Place.EmptyPlaceFragment
@@ -263,9 +264,17 @@ class ProfileActivity : AppCompatActivity() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult ?: return
                 for (location in locationResult.locations) {
-                    updateLocation(location)
-                    locationClient.removeLocationUpdates(this)
-                    break
+                    try {
+                        updateLocation(location)
+                        locationClient.removeLocationUpdates(this)
+                        break
+                    } catch (e: Exception) {
+                        Log.e("LocationUpdateError",
+                            "Помилка оновлення геоположення користувача: ${e.message}")
+                        val logger: Logger = Backendless.Logging
+                            .getLogger("com.mbaas.Logger")
+                        logger.error("Помилка оновлення геоположення користувача: ${e.message}")
+                    }
                 }
             }
         }

@@ -43,5 +43,11 @@
             android:title="Закладки"
             app:actionLayout="@layout/menu_item" />
 
+        <item
+            android:id="@+id/nav_feedback"
+            android:icon="@drawable/ic_feedback"
+            android:title="Розробнику"
+            app:actionLayout="@layout/menu_item" />
+
     </group>
 </menu>

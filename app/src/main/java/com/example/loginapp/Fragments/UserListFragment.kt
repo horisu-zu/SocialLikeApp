@@ -13,6 +13,7 @@ import com.backendless.Backendless
 import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
 import com.backendless.persistence.DataQueryBuilder
+import com.backendless.persistence.Point
 import com.example.loginapp.Adapters.UserAdapter
 import com.example.loginapp.Listeners.UserClickListener
 import com.example.loginapp.Models.User
@@ -170,7 +171,9 @@ class UserListFragment : Fragment(), UserClickListener {
             subscribedBy = (userMap["subscribedBy"] as? List<String>) ?: listOf(),
             subscribedOn = (userMap["subscribedOn"] as? List<String>) ?: listOf(),
             friendsWith = (userMap["friendsWith"] as? List<String>) ?: listOf(),
-            friendRequests = (userMap["friendRequests"] as? List<String>) ?: listOf()
+            friendRequests = (userMap["friendRequests"] as? List<String>) ?: listOf(),
+            geolocationEnabled = userMap["geolocationEnabled"].toString().toBoolean(),
+            myLocation = userMap["myLocation"] as Point?
         )
     }
 

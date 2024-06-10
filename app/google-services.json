@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "742224020232",
+    "project_id": "sociallikeapp-d43ac",
+    "storage_bucket": "sociallikeapp-d43ac.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:742224020232:android:5a8b855c296c91923722bd",
+        "android_client_info": {
+          "package_name": "com.example.loginapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNr8R5IobFN2bYgHW78cMo8OFu4ZdH8hI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

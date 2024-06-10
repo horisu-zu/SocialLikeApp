@@ -1,6 +1,5 @@
 package com.example.loginapp
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -12,16 +11,19 @@ import androidx.appcompat.app.AppCompatActivity
 import com.backendless.Backendless
 import com.backendless.BackendlessUser
 import com.backendless.async.callback.AsyncCallback
-import com.backendless.exceptions.BackendlessException
 import com.backendless.exceptions.BackendlessFault
+import com.backendless.logging.Logger
 import com.example.loginapp.Models.Defaults
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.FirebaseAnalytics
 
 
 class MainActivity : AppCompatActivity() {
 
     private var isCheckBoxSelected : Boolean = false
+    private lateinit var analytics: FirebaseAnalytics
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 
         Backendless.setUrl(Defaults.serverUrl)
         Backendless.initApp(applicationContext, Defaults.applicationId, Defaults.apiKey)
+        FirebaseApp.initializeApp(this)
 
         val loginEditText: EditText = findViewById(R.id.loginEdit)
         val passwordEditText: EditText = findViewById(R.id.passwordEdit)
@@ -63,6 +66,8 @@ class MainActivity : AppCompatActivity() {
                     val errorMessage = fault?.message ?: "Помилка логіну"
                     Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_SHORT).show()
                     Log.e("Error: ", errorMessage)
+                    val logger: Logger = Backendless.Logging.getLogger("com.mbaas.Logger")
+                    logger.error("Authorization Error: Incorrect Login or Password...")
                 }
             }, isCheckBoxSelected)
         }

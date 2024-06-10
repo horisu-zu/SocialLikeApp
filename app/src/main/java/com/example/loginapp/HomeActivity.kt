@@ -14,6 +14,7 @@ import com.example.loginapp.Fragments.FolderFragment
 import com.example.loginapp.Models.CurrentUserItems
 import com.google.android.material.navigation.NavigationView
 
+
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var drawerLayout: DrawerLayout
@@ -41,6 +42,22 @@ class HomeActivity : AppCompatActivity() {
                 FolderFragment()
             ).commit()
         }*/
+
+        /*val channels: MutableList<String> = ArrayList()
+        channels.add("default")
+        Backendless.Messaging.registerDevice(
+            channels,
+            object : AsyncCallback<DeviceRegistrationResult?> {
+                override fun handleResponse(response: DeviceRegistrationResult?) {
+                    Log.e("DEVICE SUCCESS", "Device registered")
+                }
+
+                override fun handleFault(fault: BackendlessFault) {
+                    Toast.makeText(this@HomeActivity, "Error registering " + fault.message,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            })*/
 
         val userAvatarPath = user.getProperty("avatarPath").toString()
         Glide.with(this)
@@ -82,6 +99,12 @@ class HomeActivity : AppCompatActivity() {
                 R.id.nav_friends -> {
                     val intent = Intent(this, FriendsActivity::class.java)
                     intent.putExtra("userId", user.objectId)
+                    startActivity(intent)
+
+                    true
+                }
+                R.id.nav_feedback -> {
+                    val intent = Intent(this, FeedbackActivity::class.java)
                     startActivity(intent)
 
                     true

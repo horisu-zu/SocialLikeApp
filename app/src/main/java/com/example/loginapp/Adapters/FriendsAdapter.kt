@@ -14,7 +14,7 @@ import com.example.loginapp.Models.User
 import com.example.loginapp.R
 import com.squareup.picasso.Picasso
 
-class FriendsAdapter(private val context: Context, private val userList: List<User>,
+class FriendsAdapter(private val context: Context, private var userList: List<User>,
                      private val friendClickListener: FriendClickListener) :
     RecyclerView.Adapter<FriendsAdapter.FriendViewHolder>() {
 
@@ -59,5 +59,11 @@ class FriendsAdapter(private val context: Context, private val userList: List<Us
 
             Picasso.get().load(user.avatarPath).into(avatarImageView)
         }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun setData(newUserList: List<User>) {
+        userList = newUserList
+        notifyDataSetChanged()
     }
 }

@@ -9,6 +9,7 @@ import com.backendless.Backendless
 import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
 import com.backendless.persistence.DataQueryBuilder
+import com.backendless.persistence.Point
 import com.example.loginapp.Fragments.Friend.FriendsFragment
 import com.example.loginapp.Fragments.Friend.RequestFragment
 import com.example.loginapp.Fragments.Friend.SearchFragment
@@ -201,7 +202,9 @@ class FriendsActivity : AppCompatActivity() {
             subscribedBy = (userMap["subscribedBy"] as? List<String>) ?: listOf(),
             subscribedOn = (userMap["subscribedOn"] as? List<String>) ?: listOf(),
             friendsWith = (userMap["friendsWith"] as? List<String>) ?: listOf(),
-            friendRequests = friendRequestsList
+            friendRequests = friendRequestsList,
+            geolocationEnabled = userMap["geolocationEnabled"] as Boolean ?: false,
+            myLocation = userMap["myLocation"] as Point?
         )
     }
 

@@ -24,7 +24,9 @@ import com.backendless.async.callback.AsyncCallback
 import com.backendless.exceptions.BackendlessFault
 import com.backendless.files.BackendlessFile
 import com.backendless.files.FileInfo
+import com.backendless.logging.Logger
 import com.backendless.persistence.DataQueryBuilder
+import com.backendless.persistence.Point
 import com.example.loginapp.Adapters.FileAdapter
 import com.example.loginapp.Fragments.File.AudioFileFragment
 import com.example.loginapp.Fragments.File.ImageFileFragment
@@ -172,6 +174,8 @@ class FileActivity : AppCompatActivity() {
             downloadManager.enqueue(request)
         } catch (e: Exception) {
             Log.e("DownloadError", "Error downloading file: ${e.message}")
+            val logger: Logger = Backendless.Logging.getLogger("com.mbaas.Logger")
+            logger.error("Error downloading file: ${e.message}")
         }
     }
 
@@ -359,7 +363,9 @@ class FileActivity : AppCompatActivity() {
                             subscribersCount = userData["subscribersCount"].toString().toInt(),
                             subscriptionsCount = userData["subscriptionsCount"].toString().toInt(),
                             avatarPath = userData["avatarPath"].toString(),
-                            subscribedBy = subscribedByList
+                            subscribedBy = subscribedByList,
+                            geolocationEnabled = userData["geolocationEnabled"].toString().toBoolean(),
+                            myLocation = userData["myLocation"] as Point?
                         )
                         userList.add(user)
                         Log.e("USER", user.baseNickname)
